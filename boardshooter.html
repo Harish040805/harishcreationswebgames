@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Board Shooter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <style>
+    body {margin: 0;background-color: #222;color: #fff;font-family: Arial, sans-serif;user-select: none;overflow-x: hidden;}
+    h3, h2 {text-align: center;margin: 10px 0;}
+    #score-board {font-size: 2em;}
+    .archery-board {position: absolute;width: 60px;height: 150px;background: red;border-radius: 20px;top: 30%;left: 10%;border: 2px solid yellow;}
+    #archery-board2 {top: 50%;left: 15%;background: orange;}
+    #archery-board3 {top: 70%;left: 20%;background: green;}
+    #arrow {position: absolute;width: 100px;height: 10px;background: #654321;border-radius: 5px;top: 50%;left: 80%;cursor: grab;user-select: none;
+    transform-origin: left center;transition: top 0.1s;}
+  </style>
+</head>
+<body>
+  <h3>Welcome to the Board Shooter Game</h3>
+  <h2 id="score-board">Score: 0</h2>
+  <div class="archery-board" id="archery-board1"></div><div class="archery-board" id="archery-board2"></div><div class="archery-board" id="archery-board3"></div>
+  <div id="arrow" draggable="false"></div>
+  <script>
+    const arrow = document.getElementById('arrow');
+    const boards = [
+      document.getElementById('archery-board1'),
+      document.getElementById('archery-board2'),
+      document.getElementById('archery-board3')
+    ];
+    const scoreBoard = document.getElementById('score-board');
+    let score = 0;
+    let isDragging = false;
+    let startX, startY;
+    let arrowStartLeft, arrowStartTop;
+    arrow.style.left = '80%';
+    arrow.style.top = '50%';
+    arrow.addEventListener('mousedown', e => {
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      arrowStartLeft = arrow.offsetLeft;
+      arrowStartTop = arrow.offsetTop;
+      arrow.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      let newLeft = arrowStartLeft + dx;
+      if (newLeft > arrowStartLeft) newLeft = arrowStartLeft;
+      arrow.style.left = newLeft + 'px';
+      let newTop = arrowStartTop + dy;
+      if (newTop < 0) newTop = 0;
+      if (newTop > window.innerHeight - arrow.offsetHeight) newTop = window.innerHeight - arrow.offsetHeight;
+      arrow.style.top = newTop + 'px';
+    });
+    document.addEventListener('mouseup', e => {
+      if (!isDragging) return;
+      isDragging = false;
+      arrow.style.cursor = 'grab';
+      let flyInterval = setInterval(() => {
+        let currentLeft = arrow.offsetLeft;
+        if (currentLeft <= 0) {
+          clearInterval(flyInterval);
+          checkHit();
+          resetArrow();
+        } else {arrow.style.left = (currentLeft - 15) + 'px';}
+      }, 16);
+    });
+    function checkHit() {
+      const arrowRect = arrow.getBoundingClientRect();
+      let hit = false;
+      boards.forEach(board => {
+        const boardRect = board.getBoundingClientRect();
+        if (
+          arrowRect.left <= boardRect.right &&
+          arrowRect.top >= boardRect.top &&
+          arrowRect.bottom <= boardRect.bottom
+        ) {
+          score += 10;
+          hit = true;
+        }
+      });
+      if (hit) {
+        scoreBoard.textContent = `Score: ${score}`;
+        alert('Hit! +10 points');
+      } else {alert('Missed!');}
+    }
+    function resetArrow() {arrow.style.left = '80%';arrow.style.top = '50%';}
+  </script>
+</body>
+</html>
