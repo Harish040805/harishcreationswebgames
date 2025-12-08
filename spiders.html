@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spiders</title>
+  <style>
+    body { margin: 0; padding: 0; }
+    canvas { border: 1px solid black; position: absolute; top: 0; left: 0; z-index: -1; }
+    .background-text { position: absolute; top: 25%; left: 10%; transform: translate(-50%, -50%); font-size: 15px; color: #fff; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div>
+  <p>
+	<ul class="background-text">
+	<br><br><br><br><br> 
+	<br><br><br><br><br>  <br>  <br> 
+	Spiders<br><br>
+	Initial Screen<br>
+    <li>When you first open the HTML file, you'll see <br> a black canvas that covers the entire window. <br> The canvas will have a white border around it.</li><br><br>
+    Spider Movement<br>
+    <li>As you move your mouse or pointer around <br> the window, you'll notice that two small white <br> circles (the "spiders") will start to follow  <br> your pointer.
+	The spiders will move smoothly <br> and continuously, giving the illusion that they're <br> alive and chasing your pointer.</li><br><br>
+    Animation Loop<br>
+    <li>The spiders' movement is achieved through <br> an animation loop that runs continuously in <br> the background.
+	The loop redraws the canvas <br> and updates the spiders' positions at regular <br> intervals, creating the illusion of smooth <br> movement.</li><br><br>
+    Window Resizing<br>
+    <li>If you resize the browser window, the canvas  <br> will automatically adjust to fit the new <br> window size.
+	The spiders will continue to <br> follow your pointer, even as the window  <br> size changes.</li>
+	</ul>
+  </p>
+  </div>
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    class Spider {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+      }
+      follow(targetX, targetY) {
+        this.x += (targetX - this.x) * 0.01;
+        this.y += (targetY - this.y) * 0.01;
+      }
+      tick() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 10, 0, 2 * Math.PI);
+        ctx.fillStyle = '#a91d00';
+		    ctx.strokeStyle = '#ff0000';
+	    	ctx.lineWidth = 2;
+        ctx.fill();
+		    ctx.stroke();
+      }
+    }
+    function many(count, spawn) {
+      const spiders = [];
+      for (let i = 0; i < count; i++) {
+        spiders.push(spawn());
+      }
+      return spiders;
+    }
+    function spawn() {
+      return new Spider(Math.random() * canvas.width, Math.random() * canvas.height);
+    }
+    const spiders = many(2, spawn);
+    addEventListener("pointermove", (e) => {
+      spiders.forEach(spider => {
+        spider.follow(e.clientX, e.clientY)
+      })
+    });
+    function anim() {
+      ctx.fillStyle = "#a95f20";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      spiders.forEach(spider => spider.tick())
+      requestAnimationFrame(anim);
+    }
+    requestAnimationFrame(anim);
+    window.addEventListener('resize', () => {
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+    });
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+</script>
+</body>
+</html>
