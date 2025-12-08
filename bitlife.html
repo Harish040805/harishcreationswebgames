@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>&#127863; BIT LIFE &#128139; | 18+ (Adult Only) Game </title>
+<style>
+    body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(135deg, #ff80ab, #ffccd9); display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .container { background: #fff; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 6px 12px rgba(0,0,0,0.1); width: 600px; display: flex; flex-direction: column; align-items: center; }
+    .question-box { font-size: 22px; margin-bottom: 30px; color: #333; min-height: 80px; display: flex; justify-content: center; align-items: center; }
+    .btn-group { display: flex; justify-content: space-between; width: 100%; gap: 20px; } 
+    button { flex: 1; padding: 12px 0; font-size: 18px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+    .btn1 { background-color: #ff80ab; color: white; }
+    .btn1:hover { background-color: #ff4d94; }
+    .btn2 { background-color: #f1f1f1; color: #333; }
+    .btn2:hover { background-color: #ddd; }
+    .score { font-size: 22px; margin-top: 15px; color: #444; }
+	  .fonto{ font-size: 30px; margin-bottom: 3px; color: #ff80ab; }
+</style>
+</head>
+<body>
+    <div class="container">
+	  <b class="fonto">&#127863; BIT LIFE &#128139;<hr></b>
+        <div class="question-box" id="question">
+		Hello! Shall we start the game?
+		</div>
+        <div class="btn-group">
+            <button id="btn1" class="btn1" onclick="nextQuestion(1)">Lets go!</button>
+            <button id="btn2" class="btn2" onclick="nextQuestion(0)">Hold on please!</button>
+        </div>
+        <div class="score" id="score"></div>
+    </div>
+<script>
+    const commonQuestions = [
+        { text: "Hello! Shall we start the game?", options: ["Lets go!", "Hold on please!"] },
+        { text: "Are you 18+ to play this game?", options: ["Yes", "No"] },
+		    { text: "Please choose your sex", options: ["Female", "Male"] },
+		    { text: "Are you an introvert or extrovert?", options: ["Extrovert", "Introvert"] },
+        { text: "When your friends talk about porns, would you...", options: ["Talk and laugh together", "Move away from that place"] },
+        { text: "Have you ever watched porns in your lifetime?", options: ["Yes! Dirty mind is always dirty.", "No! I am a good one!"] },
+        { text: "How will you react when you accidentally seen someone nude?", options: ["Stare at them curiously", "Close your eyes immediately"] },
+        { text: "Do you like kiss scenes when shown in films?", options: ["Yes! Love seeing such scenes in films", "No! Hate such scenes!"] },
+        { text: "What will you do if you see such scenes coming in films?", options: ["I watch those two lips of opposite sex gets connected", "I immeadiately change the channel!"] },        
+		    { text: "How do you like to sleep at nights?", options: ["I always love sleeping nude", "I wear a decent, comfortable costume"] },
+        { text: "When will you dry your body after taking a bath?", options: ["I walk around nude and let them dry", "Immediately after my bath, I dry myself"] },
+		    { text: "What is your favorite movie?", options: ["Titanic, Wolf of Wall Street, Game of Thrones", "Aladdin, Luca, Kung Fu Panda"] },
+        { text: "Would you close your bathroom door while you bath?", options: ["Not preferentially! It will usually be kept open when I bath", "I always close the door when I bath"] },
+        { text: "Would you mind bathing nude with your friends?", options: ["I don't mind bathing with friends and others", "I love bathing alone in private"] },
+        { text: "Do you like nuru massage and nude oil massages?", options: ["I love them a lot", "I hate such massages"] },
+	    	{ text: "How to you prefer to dress when you go for a gym?", options: ["I prefer to dress hot and sexy that I grab everyone's attention", "I prefer to dress in a descent suit that fits me"] },
+	    	{ text: "Which part of your body will you close if someone shocks you revealing their private areas?", options: ["Close my mouth in awe", "Close my eyes in awe"] },
+	    	{ text: "Do you prefer rough sex or erotic kind of one?", options: ["I always prefer rough sex", "Erotic kind of one is better that rough sex"] },
+	    	{ text: "When do you think is the right time to have sex with your partner?", options: ["Love to play before wedding day!", "This kind of stuff should be done strictly after marriage"] }
+    ];
+	const maleQuestions = [
+	    { text: "What is your opinion on touching girls' hip?", options: ["It is an interesting thing to do", "I respect others"] },
+	  	{ text: "In occasions, will you allow your friend enter your bathroom while you bath?", options: ["Yes! I allow my friend enter my bathroom when needed, even if I am naked", "No! I always maintain my dignity with everyone (including my friends)"] },
+	    { text: "Have you ever thought of your mom or your sister in a wrong sense?", options: ["I have a buring desire to see them nude", "My family is my protection, I am their protection"] }
+	];
+	const femaleQuestions = [
+		  { text: "What is your opinion on touching a boy's dick?", options: ["It is an interesting thing to do", "I respect others"] },
+	  	{ text: "In occasions, will you allow your friend to help you change your dress?", options: ["Yes! I allow my friend to help me change my dress, even if I am naked", "No! I maintain my dignity and will not allow anyone in my private space (including my friends)"] },
+	    { text: "How will you react if you see a boy's dick is being exposed when he pees?", options: ["Take it in a casual sense", "Take it seriously and move away from that spot"] }
+    ];    	
+    let questions = [...commonQuestions];
+    let index = 0;
+    let score = 0;
+    let genderSelected = null;
+    function nextQuestion(choice) {
+        if (index === 0 && choice === 0) { endGame("You chose to stop. Game Over!"); return; }
+        if (index === 1 && choice === 0) { endGame("You are not eligible to play. Game Over!"); return; }
+        if (index === 2) {
+            genderSelected = questions[index].options[choice];
+            if (genderSelected === "Female") { questions = [...questions, ...maleQuestions]; } 
+            else if (genderSelected === "Male") { questions = [...questions, ...femaleQuestions]; }
+        }
+        score += choice;
+        index++;
+        if (index < questions.length) {
+            document.getElementById("question").textContent = questions[index].text;
+            document.getElementById("btn1").textContent = questions[index].options[0];
+            document.getElementById("btn2").textContent = questions[index].options[1];
+        } 
+        else { endGame("Thank you! Your Score: " + score + " % dirty"); }
+    }
+    function endGame(message) {
+        if (message.startsWith("Thank you")) { message = "Thank you! Your Score: " + Math.round((score / index) * 100) + "% dirty"; }
+        document.getElementById("question").textContent = message;
+        document.querySelector(".btn-group").style.display = "none";
+        document.getElementById("score").textContent = "";
+    }
+</script>
+</body>
+</html>
