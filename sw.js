@@ -4,9 +4,19 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll([
-        './',
-        './index.html',
-        './harishcreationswebgamescss.css'
+  './index.html',
+  './birdshootinggame.html',
+  './bitlife.html',
+  './boardshooter.html',
+  './spiders.html',
+  './tictactoegame.html'
+  './archerymastergame.html'
+  './bulbsimulation.html'
+      './hackedwindow.html'
+      './laserplaneshoot.html'
+      './pingpong.html'
+      './rotatingwheelgame.html'
+      './tictactoegame.html'
       ]);
     })
   );
