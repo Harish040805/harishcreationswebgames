@@ -26,6 +26,9 @@
                     <h3>Harish Creations</h3>
                     <h1>Web Games</h1>
                     <button onclick='parent.postMessage(`removeIframe`, `*`);'>Get Started</button>
+					<b>Games represented 🟢 need internet to play. Other games can be played offline after entering the site once. <br>
+					⚠️ Refreshing the page may break offline games. <br>
+					On such cases, go back to the main page, refresh and re-enter your game.</b>
                 </div>
             </body>
         </html>
@@ -56,6 +59,7 @@
         <button id="main-page-button" onclick="window.location.reload();">Main Page</button>
     </div>
 <script>
+alert("hi");
     window.addEventListener('message', event => {
         if (event.data === 'removeIframe') {
 			const iframe = document.querySelector('iframe'); iframe.remove(); document.querySelector('.actual-page').style.display = 'flex';
@@ -73,16 +77,3 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
