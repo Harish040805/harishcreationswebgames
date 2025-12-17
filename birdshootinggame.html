@@ -98,35 +98,14 @@ footer a{text-decoration:none;  font-size:20px; color:rgba(29,161,242,1.00); ver
         <label for="circle5" class="pajaro pajaro5"><span></span></label>
         <label for="circle6" class="pajaro pajaro6"><span></span></label>
         <div class="sum">SCORE:</div>
-    
     </div>
 <script>
-<script>
 if ('serviceWorker' in navigator) {
-  const swCode = `
-    self.addEventListener('install', event => {
-      event.waitUntil(
-        caches.open('my-offline-cache').then(cache => {
-          return cache.addAll(['./']);
-        })
-      );
-    });
-
-    self.addEventListener('fetch', event => {
-      event.respondWith(
-        caches.match(event.request).then(response => {
-          return response || fetch(event.request);
-        })
-      );
-    });
-  `;
-
-  const blob = new Blob([swCode], { type: 'application/javascript' });
-  const swURL = URL.createObjectURL(blob);
-
-  navigator.serviceWorker.register(swURL)
-    .then(() => console.log('Service Worker registered'))
-    .catch(err => console.error('SW registration failed:', err));
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('Service Worker registered'))
+      .catch(err => console.error('SW registration failed:', err));
+  });
 }
 </script>
 </body>
