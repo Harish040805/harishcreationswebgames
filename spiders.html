@@ -84,5 +84,33 @@
     canvas.width = innerWidth;
     canvas.height = innerHeight;
 </script>
+<script>
+	if('serviceWorker' in navigator) {
+		navigator.serviceWorker.register(URL.createObjectURL(new Blob([`
+			self.addEventListener('install',(event) => {
+				event.waitUntil(catches.open('my-offline-cache').then((cache)=>{
+					return cache.addAll([
+						'/',
+						'/index.html'
+					]);
+				})
+			);
+			});
+			self.addEventListener('fetch',(event) => {
+				event.respondWith(
+					catches.match(event.request).then((respond)=>{
+						return response || fetch(event.request);
+					})
+				);
+			`], {type: 'application/javascript'}													 
+				)), {scope: '/'})
+		.then((registration)=>{
+			console.log('Service Worker registered!');
+		})
+		.catch((error)=>{
+			console.log('Service Worker Register Failed!:', error);
+		});
+	}
+</script>
 </body>
 </html>
