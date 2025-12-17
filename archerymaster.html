@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Archery Master Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+<style>
+body{ background: #C7E5F7; }
+.archery-board { position: absolute; top: 50%; transform: translate(0, -50%); border: 1px solid black; border-radius: 50%; }
+.c-shape-handle { position: absolute; top: 50%; left: 83%; transform: translate(0, -50%); width: 100px; height: 200px; border-radius: 60px;
+  border: 20px solid #7d5839; border-right: none; background-color: transparent; }
+#archery-board1 { left: 2%; width: 270px; height: 400px; background-color: #fff; }
+#archery-board2 { left: 4%; width: 220px; height: 350px; background-color: #777; }
+#archery-board3 { left: 6%; width: 170px; height: 300px; background-color: #0099CC; }
+#archery-board4 { left: 9.5%; width: 100px; height: 200px; background-color: #FF6666; }
+#archery-board5 { left: 12%; width: 30px; height: 100px; background-color: #FFD700; }
+#archery-board6 { left: 13%; width: 5px; height: 5px; background-color: #aaa; }
+#archery-bow { position: absolute; top: 50%; left: 80%; transform: translate(0, -50%); width: 100px; height: 50px; background-color: #946e4a; 
+			  border: 2px solid #7d5839; border-radius: 10px; }
+#arrow { position: absolute; top: 50%; left: 75%; transform: translate(0, -50%) rotate(-90deg); width: 10px; height: 50px; background-color: gray;
+      clip-path: polygon(50% 0%, 100% 100%, 50% 80%, 0% 100%); cursor: grab; }
+#string { position: absolute; top: 37.25%; left: 89%; width: 2px; height: 185px; background-color: #fff; }
+#stick { position: absolute; top: 50%; left: 86.5%; transform: translate(0, -50%) rotate(-90deg); width: 2px; height: 300px; background-color: brown;
+      cursor: grab; }
+.trapezoid { border-bottom: 50px solid #cd9b1d; border-left: 30px solid transparent; border-right: 25px solid transparent; height: 560px; width: 260px;
+	position: absolute; top: 1%; }
+.ground { position: absolute; bottom: 0; left: 0; width: 99.8%; height: 112px; background-color: lime; border: 2px solid green; }
+h3 { font-family: Arial, sans-serif; font-size: 30px; text-align: center; margin-top: 5%; color: #fff; }
+</style>
+</head>
+<body>
+<script>
+const iframe = document.createElement('iframe');
+iframe.style.position = 'fixed';
+iframe.style.top = '0';
+iframe.style.left = '0';
+iframe.style.width = '100%';
+iframe.style.height = '100%';
+iframe.style.zIndex = '9999';
+iframe.style.border = 'none';
+const iframeContent = `
+  <html>
+    <head>
+      <style>
+        body{ font-family: Arial, sans-serif; background-color: skyblue; text-align: center; margin-top: 20%; }
+		button { padding: 10px 20px; border: none; border-radius: 5px; background-color: lime; color: #aaa; cursor: pointer; }
+        button:hover { background-color: #00ff7f; }
+      </style>
+    </head>
+    <body>
+      <h1 style="color: #fff;">Archery Master Game</h1>
+      <button onclick="parent.document.body.removeChild(parent.document.querySelector('iframe'));">Start</button>
+    </body>
+  </html>
+`;
+
+iframe.srcdoc = iframeContent;
+document.body.appendChild(iframe);
+</script>
+<h3>Welcome to the Archery Master Game</h3>
+  <div class="archery-board" id="archery-board1"></div><div class="archery-board" id="archery-board2"></div><div class="archery-board" id="archery-board3"></div>
+  <div class="archery-board" id="archery-board4"></div><div class="archery-board" id="archery-board5"></div><div class="archery-board" id="archery-board6"></div>
+  <div class="trapezoid"></div><div class="ground"></div><div id="archery-bow"></div><div class="c-shape-handle"></div><div id="arrow"></div><div id="string"></div><div id="stick"></div>
+  <script>
+    const arrow = document.getElementById('arrow');
+    const boards = [document.getElementById('archery-board1'), document.getElementById('archery-board2'), document.getElementById('archery-board3')];
+    let isDragging = false;
+    let startX = 0;
+    let initialArrowLeft = arrow.offsetLeft;
+    let initialArrowTop = arrow.offsetTop;
+
+arrow.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  startX = e.clientX;
+  startY = e.clientY;
+  initialArrowLeft = arrow.offsetLeft;
+  initialArrowTop = arrow.offsetTop;
+  e.preventDefault();
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (isDragging) {
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    if (initialArrowLeft + dx >= initialArrowLeft) { arrow.style.left = `${initialArrowLeft + dx}px`; }
+    arrow.style.top = `${initialArrowTop + dy}px`;
+  }
+});
+document.addEventListener('mouseup', (e) => {
+  isDragging = false;
+  let intervalId = setInterval(() => {
+    let arrowLeft = arrow.offsetLeft;
+    let thresholdLeft = 16 * window.innerWidth / 100;
+    if (arrowLeft <= thresholdLeft) { clearInterval(intervalId); } 
+    else { arrow.style.left = `${arrowLeft - 30}px`; }
+  }, 16);
+});
+  </script>
+</body>
+</html>
