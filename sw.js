@@ -9,13 +9,13 @@ self.addEventListener('install', event => {
   './bitlife.html',
   './boardshooter.html',
   './spiders.html',
-  './tictactoegame.html'
-  './archerymastergame.html'
-  './bulbsimulation.html'
-      './hackedwindow.html'
-      './laserplaneshoot.html'
-      './pingpong.html'
-      './rotatingwheelgame.html'
+  './tictactoegame.html',
+  './archerymastergame.html',
+  './bulbsimulation.html',
+      './hackedwindow.html',
+      './laserplaneshoot.html',
+      './pingpong.html',
+      './rotatingwheelgame.html',
       './tictactoegame.html'
       ]);
     })
