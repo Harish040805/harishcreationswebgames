@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hc-webgames-v2';
+const CACHE_NAME = 'v1';
 
 self.addEventListener('install', event => {
   event.waitUntil(
