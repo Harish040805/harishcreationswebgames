@@ -75,8 +75,24 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<button onclick="clearServiceWorkerCache()">Clear Cache & Refresh</button>
+
+<script>
+function clearServiceWorkerCache() {
+  if ('serviceWorker' in navigator) {
+    caches.keys().then(names => {
+      names.forEach(name => caches.delete(name));
+    });
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(reg => reg.unregister());
+    });
+    window.location.reload();
+  }
+}
+</script>
 </body>
 </html>
+
 
 
 
