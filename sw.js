@@ -6,13 +6,11 @@ self.addEventListener('install', event => {
       return cache.addAll([
         './',
         './index.html',
-
         './birdshooting/birdshootinggame.html',
         './bitlife/bitlife.html',
         './boardshooter/boardshooter.html',
         './spiders/spiders.html',
         './tictactoe/tictactoegame.html',
-        './archerymaster/archerymastergame.html',
         './bulbsimulation/bulbsimulation.html',
         './hackedwindow/hackedwindow.html',
         './laserplaneshoot/laserplaneshoot.html',
@@ -40,9 +38,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => {
-      // Return cached response if available, otherwise fetch from network
       return response || fetch(event.request).then(networkResponse => {
-        // Optional: dynamically cache new requests
         return caches.open(CACHE_NAME).then(cache => {
           cache.put(event.request, networkResponse.clone());
           return networkResponse;
