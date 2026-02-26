@@ -16,7 +16,8 @@ self.addEventListener('install', event => {
         './hackedwindow/hackedwindow.html',
         './laserplaneshoot/laserplaneshoot.html',
         './pingpong/pingpong.html',
-        './rotatingwheelgame/rotatingwheelgame.html'
+        './rotatingwheelgame/rotatingwheelgame.html',
+        './excitonium/excitonium.html'
       ]);
     })
   );
