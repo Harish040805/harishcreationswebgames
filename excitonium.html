@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>⚛ Excitonium: Core Reactor</title>
+<style>
+body{margin:0;overflow:hidden;background:radial-gradient(circle at center,#050510,#000);font-family:Arial,Helvetica,sans-serif;color:white;text-align:center;user-select: none;}
+h1{margin:10px;font-size:22px;letter-spacing:2px;}
+#gameContainer{position:relative;width:100vw;height:85vh;}
+canvas{display:block;margin:auto;}
+#ui{position:absolute;bottom:10px;width:100%;}
+button{padding:10px 18px;margin:5px;font-size:15px;border:none;border-radius:8px;cursor:pointer;background:linear-gradient(45deg,#ffeb3b,#ffc107);}
+#pauseBtn{background:linear-gradient(45deg,#00e5ff,#0099ff);}
+#lossMessage{position:absolute;top:40%;width:100%;font-size:30px;color:#ff4d4d;display:none;}
+#tryAgainBtn{display:none;background:linear-gradient(45deg,#ff4444,#aa0000);}
+#startOverlay{position:absolute;width:100%;height:100%;background:#000;z-index:10;}
+iframe{width:100%;height:100%;border:none;}
+</style>
+</head>
+<body>
+<br><br>
+<h1>Harish Creations</h1>
+<div id="gameContainer">
+<div id="startOverlay">
+<iframe srcdoc='
+<html>
+<body style="background:#00000063;color:white;border:5px solid white; padding:40px;text-align:center;font-family:Arial;margin-top:20%;user-select: none;">
+<h2>⚛ Excitonium: Core Reactor ⚡</h2>
+<p>Press the button below to begin</p>
+<button style="padding:15px 25px;font-size:18px;border-radius:10px;background:linear-gradient(45deg,#2386d7,#1764a3);color:#fff;" onclick="parent.startGame()">Start Game</button>
+</body>
+</html>
+'></iframe>
+</div>
+<canvas id="canvas"></canvas>
+<div id="lossMessage">💥 YOU LOST 💥</div>
+<div id="ui">
+<div id="score">Score: 0</div>
+<button onclick="pulseLight()">💡 Light Beam</button>
+<button id="pauseBtn" onclick="togglePause()">⏸ Pause</button>
+<button id="tryAgainBtn" onclick="restartGame()">🔄 New Game</button>
+</div>
+</div>
+<script>
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight*0.85;
+
+let centerX=canvas.width/2;
+let centerY=canvas.height/2;
+let orbitRadius,angle,speed,separated,separationTimer;
+let score,gameOver,beamActive;
+let enemies,particles,spawnTimer,friendCircles;
+let running=false;
+let paused=false;
+let playerRadius=15;
+let borderPercent=100;
+let playerSizeMultiplier=1;
+
+function init(){
+    orbitRadius=120;
+    angle=0;
+    speed=0.01;
+    separated=false;
+    separationTimer=0;
+    score=0;
+    gameOver=false;
+    beamActive=false;
+    enemies=[];
+    particles=[];
+    spawnTimer=0;
+    borderPercent=100;
+    playerSizeMultiplier=1;
+    friendCircles=[];
+    document.getElementById("score").innerText="Score: 0";
+    document.getElementById("lossMessage").style.display="none";
+    document.getElementById("tryAgainBtn").style.display="none";
+}
+
+function spawnFriendCircle(){
+    let theta=Math.random()*Math.PI*2;
+    friendCircles.push({
+        angle:theta,
+        radius:orbitRadius,
+        size:12,
+        life:600
+    });
+}
+
+function startGame(){
+    document.getElementById("startOverlay").style.display="none";
+    running=true;
+    init();
+    setInterval(()=>{
+        if(running && !paused && Math.random()<0.7) spawnFriendCircle();
+    }, 4000);
+}
+
+function restartGame(){
+    document.getElementById("startOverlay").style.display="block";
+    document.getElementById("lossMessage").style.display="none";
+    document.getElementById("tryAgainBtn").style.display="none";
+    running=false;
+}
+
+function togglePause(){
+    if(!running || gameOver) return;
+    paused=!paused;
+    document.getElementById("pauseBtn").innerText=paused?"▶ Play":"⏸ Pause";
+}
+
+function pulseLight(){
+    if(gameOver || paused) return;
+    beamActive=true;
+    setTimeout(()=>{ beamActive=false; },400);
+}
+
+speed = 0.01;
+const maxSpeed = 0.03;
+const minSpeed = -0.03;
+
+document.addEventListener("keydown", e => {
+    if(paused || gameOver) return;
+    if(e.key==="ArrowRight") speed = Math.min(speed + 0.003, maxSpeed);
+    if(e.key==="ArrowLeft") speed = Math.max(speed - 0.003, minSpeed);
+    if(e.key==="ArrowUp") orbitRadius = Math.min(orbitRadius + 5, 260);
+    if(e.key==="ArrowDown") orbitRadius = Math.max(orbitRadius - 5, 40);
+    if(e.key==="l"||e.key==="L") pulseLight();
+});
+
+function spawnEnemy(){
+    let side=Math.floor(Math.random()*4);
+    let x,y;
+    if(side===0){x=0;y=Math.random()*canvas.height;}
+    if(side===1){x=canvas.width;y=Math.random()*canvas.height;}
+    if(side===2){x=Math.random()*canvas.width;y=0;}
+    if(side===3){x=Math.random()*canvas.width;y=canvas.height;}
+    enemies.push({x,y});
+}
+
+function createExplosion(x,y){
+    let particleCount = 60;
+
+    for(let i=0;i<particleCount;i++){
+        particles.push({
+            x:x,
+            y:y,
+            vx:(Math.random()-0.5)*5,
+            vy:(Math.random()-0.5)*5,
+            life:50
+        });
+    }
+}
+
+function endGame(){
+    gameOver=true;
+    running=false;
+    document.getElementById("lossMessage").style.display="block";
+    document.getElementById("tryAgainBtn").style.display="inline-block";
+}
+
+function animate(){
+    requestAnimationFrame(animate);
+    if(!running||paused) return;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    angle+=speed;
+
+    let player={x:centerX+orbitRadius*Math.cos(angle),
+                y:centerY+orbitRadius*Math.sin(angle)};
+
+    if(beamActive && player.x>centerX-25 && player.x<centerX+25){
+        separated=true;
+        separationTimer=80;
+        score+=0.2;
+    }
+
+    if(separated){
+        orbitRadius+=1.5;
+        separationTimer--;
+    } else orbitRadius-=0.5;
+    if(separationTimer<=0) separated=false;
+    orbitRadius=Math.max(40,Math.min(260,orbitRadius));
+
+    spawnTimer++;
+    if(spawnTimer>300){
+        spawnEnemy();
+        spawnTimer=0;
+    }
+
+    let gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 40);
+    gradient.addColorStop(0, "#ff4d4d");
+    gradient.addColorStop(0.7, "#ff0000");
+    gradient.addColorStop(1, "#800000");
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 40, 0, Math.PI*2);
+    ctx.fillStyle = gradient;
+    ctx.shadowColor = "#ff4d4d";
+    ctx.shadowBlur = 30;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.beginPath();
+    ctx.arc(centerX,centerY,orbitRadius,0,Math.PI*2);
+    ctx.strokeStyle="rgba(255,255,255,0.15)";
+    ctx.stroke();
+
+    friendCircles.forEach((f,i)=>{
+        f.angle+=0.002;
+        f.life--;
+        let fx=centerX+orbitRadius*Math.cos(f.angle);
+        let fy=centerY+orbitRadius*Math.sin(f.angle);
+        ctx.beginPath();
+        ctx.arc(fx,fy,f.size,0,Math.PI*2);
+        ctx.fillStyle="black";
+        ctx.fill();
+        ctx.strokeStyle="white";
+        ctx.lineWidth=2;
+        ctx.stroke();
+        ctx.shadowBlur=0;
+        let dx=player.x-fx;
+        let dy=player.y-fy;
+        if(Math.sqrt(dx*dx+dy*dy)<f.size+playerRadius){
+            borderPercent=Math.min(100,borderPercent+0.5);
+        }
+        if(f.life<=0) friendCircles.splice(i,1);
+    });
+
+    let baseSize = playerRadius*2;
+    let size = baseSize * playerSizeMultiplier;
+    let radius = (borderPercent/100)*(size/2);
+    ctx.beginPath();
+    ctx.moveTo(player.x-radius, player.y-size/2);
+    ctx.lineTo(player.x+radius, player.y-size/2);
+    ctx.arcTo(player.x+size/2, player.y-size/2, player.x+size/2, player.y+radius, radius);
+    ctx.lineTo(player.x+size/2, player.y-radius);
+    ctx.arcTo(player.x+size/2, player.y+size/2, player.x+radius, player.y+size/2, radius);
+    ctx.lineTo(player.x-radius, player.y+size/2);
+    ctx.arcTo(player.x-size/2, player.y+size/2, player.x-size/2, player.y+radius, radius);
+    ctx.lineTo(player.x-size/2, player.y-radius);
+    ctx.arcTo(player.x-size/2, player.y-size/2, player.x-radius, player.y-size/2, radius);
+    ctx.closePath();
+    let gradientPlayer = ctx.createRadialGradient(player.x, player.y, 0, player.x, player.y, size/2);
+    gradientPlayer.addColorStop(0, "#00f0ff");
+    gradientPlayer.addColorStop(0.5, "#0077ff");
+    gradientPlayer.addColorStop(1, "#0011aa");
+    ctx.fillStyle = gradientPlayer;
+    ctx.shadowColor = "#00f0ff";
+    ctx.shadowBlur = 25;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    let dxRed=player.x-centerX;
+    let dyRed=player.y-centerY;
+    if(Math.sqrt(dxRed*dxRed+dyRed*dyRed) < 40) endGame();
+
+    for(let i=enemies.length-1;i>=0;i--){
+        let enemy=enemies[i];
+        let dx=player.x-enemy.x;
+        let dy=player.y-enemy.y;
+        let dist=Math.sqrt(dx*dx+dy*dy);
+        enemy.x+=dx/dist*1.5;
+        enemy.y+=dy/dist*1.5;
+
+        ctx.beginPath();
+        ctx.arc(enemy.x,enemy.y,12,0,Math.PI*2);
+    let gradientEnemy = ctx.createRadialGradient(enemy.x, enemy.y, 0, enemy.x, enemy.y, 12);
+    gradientEnemy.addColorStop(0, "#ffb84d");
+    gradientEnemy.addColorStop(0.5, "#ff7a00");
+    gradientEnemy.addColorStop(1, "#aa3300");
+    ctx.fillStyle = gradientEnemy;
+    ctx.shadowColor = "#ff7a00";
+    ctx.shadowBlur = 20;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+        if(dist<20) borderPercent -= 1.5;
+
+        let dxN=centerX-enemy.x;
+        let dyN=centerY-enemy.y;
+        if(Math.sqrt(dxN*dxN+dyN*dyN)<50){
+            createExplosion(enemy.x,enemy.y);
+            enemies.splice(i,1);
+        }
+    }
+
+    for(let i=particles.length-1;i>=0;i--){
+        let p=particles[i];
+        p.x+=p.vx;
+        p.y+=p.vy;
+        p.life--;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,3,0,Math.PI*2);
+        ctx.fillStyle="orange";
+        ctx.fill();
+        if(p.life<=0) particles.splice(i,1);
+    }
+
+    if(borderPercent<=0) endGame();
+
+    let lifePercent = Math.max(0, Math.floor(borderPercent));
+    let meterWidth = 150;
+    let meterHeight = 20;
+
+    let lifeColor = lifePercent>80?"#00ff99":lifePercent>50?"#ffff00":"#ff4444";
+
+    ctx.fillStyle = "#333";
+    ctx.fillRect(20, 20, meterWidth, meterHeight);
+    ctx.fillStyle = lifeColor;
+    ctx.fillRect(20, 20, meterWidth * (lifePercent/100), meterHeight);
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(20, 20, meterWidth, meterHeight);
+
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#fff";
+    ctx.fillText(lifePercent + "%", 20 + meterWidth + 10, 35);
+
+    ctx.font = "18px Arial";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText("Score: " + Math.floor(score), 20, 60);
+
+    if(beamActive){
+        ctx.fillStyle="rgba(255,255,0,0.25)";
+        ctx.fillRect(centerX-25,0,50,canvas.height);
+    }
+}
+
+animate();
+</script>
+</body>
+</html>
