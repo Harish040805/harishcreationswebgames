@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bunny Home 🐰🏡</title>
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    background: linear-gradient(#87CEEB, #e0f7ff);
+    font-family: Arial;
+}
+canvas { display:block; }
+
+#ui {
+    position:absolute;
+    top:10px;
+    left:10px;
+    color:white;
+    background:rgba(0,0,0,0.5);
+    padding:10px;
+    border-radius:10px;
+}
+
+#overlay {
+    position:absolute;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.7);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    color:white;
+}
+
+button {
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    background:#ff69b4;
+    color:white;
+    font-size:18px;
+    cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div id="ui">
+Score: <span id="score">0</span><br>
+High Score: <span id="highScore">0</span>
+</div>
+
+<div id="overlay">
+<h1 id="resultText"></h1>
+<button onclick="restartGame()">Restart 🔁</button>
+</div>
+
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let groundY;
+let bunny, plates, enemies, home;
+
+let gravity = 0.6;
+let gameRunning = true;
+let score = 0;
+let highScore = localStorage.getItem("bunnyHigh") || 0;
+
+document.getElementById("highScore").innerText = highScore;
+
+// KEY SYSTEM
+let keys = { left:false, right:false, up:false };
+
+document.addEventListener("keydown", e=>{
+    if(e.key==="ArrowLeft") keys.left = true;
+    if(e.key==="ArrowRight") keys.right = true;
+    if(e.key==="ArrowUp") keys.up = true;
+});
+
+document.addEventListener("keyup", e=>{
+    if(e.key==="ArrowLeft") keys.left = false;
+    if(e.key==="ArrowRight") keys.right = false;
+    if(e.key==="ArrowUp") keys.up = false;
+});
+
+// RESIZE FIRST (CRITICAL FIX)
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    groundY = canvas.height * 0.85;
+}
+resize();
+window.addEventListener("resize", resize);
+
+function init(){
+    bunny = {
+        x:100,
+        y:groundY-40,
+        w:40,
+        h:40,
+        dy:0,
+        jumping:false,
+        onPlate:null
+    };
+
+    plates = [
+        {x:100,y:groundY-120,w:140,h:20,dx:1.2},
+        {x:350,y:groundY-200,w:140,h:20,dx:-1.5},
+        {x:650,y:groundY-260,w:140,h:20,dx:1},
+        {x:950,y:groundY-180,w:140,h:20,dx:-1.3}
+    ];
+
+    // 🔥 RANDOM ENEMY GENERATION (5 to 8)
+    enemies = [];
+    let enemyCount = Math.floor(Math.random() * 4) + 5; // 5 to 8
+
+    for(let i = 0; i < enemyCount; i++){
+        let isOnGround = Math.random() > 0.5;
+
+        enemies.push({
+            x: Math.random() * (canvas.width - 100),
+            y: isOnGround 
+                ? groundY - 40 
+                : groundY - (120 + Math.random() * 200),
+            w: 40,
+            h: 40,
+            dx: (Math.random() * 2 + 1) * (Math.random() > 0.5 ? 1 : -1)
+        });
+    }
+
+    home = {
+        x:canvas.width-120,
+        y:groundY-280,
+        size:50
+    };
+
+    score = 0;
+    gameRunning = true;
+    document.getElementById("score").innerText = score;
+    document.getElementById("overlay").style.display = "none";
+}
+  
+init();
+
+function update(){
+
+    if(keys.left) bunny.x -= 4;
+    if(keys.right) bunny.x += 4;
+
+    if(keys.up && !bunny.jumping){
+        bunny.dy = -12;
+        bunny.jumping = true;
+        bunny.onPlate = null;
+    }
+
+    bunny.dy += gravity;
+    bunny.y += bunny.dy;
+
+    // Ground
+    if(bunny.y + bunny.h >= groundY){
+        bunny.y = groundY - bunny.h;
+        bunny.dy = 0;
+        bunny.jumping = false;
+        bunny.onPlate = null;
+    }
+
+    // Plates
+    plates.forEach(p=>{
+        p.x += p.dx;
+        if(p.x < 0 || p.x + p.w > canvas.width) p.dx *= -1;
+
+        if(
+            bunny.x < p.x + p.w &&
+            bunny.x + bunny.w > p.x &&
+            bunny.y + bunny.h <= p.y + 10 &&
+            bunny.y + bunny.h + bunny.dy >= p.y
+        ){
+            bunny.dy = 0;
+            bunny.jumping = false;
+            bunny.y = p.y - bunny.h;
+            bunny.onPlate = p;
+        }
+    });
+
+    // Move with plate
+    if(bunny.onPlate){
+        bunny.x += bunny.onPlate.dx;
+    }
+
+    // Enemies
+    enemies.forEach(e=>{
+        e.x += e.dx;
+        if(e.x < 0 || e.x + e.w > canvas.width) e.dx *= -1;
+
+        if(
+            bunny.x < e.x + e.w &&
+            bunny.x + bunny.w > e.x &&
+            bunny.y < e.y + e.h &&
+            bunny.y + bunny.h > e.y
+        ){
+            endGame(false);
+        }
+    });
+
+    // Win
+    if(
+        bunny.x < home.x + home.size &&
+        bunny.x + bunny.w > home.x &&
+        bunny.y < home.y + home.size &&
+        bunny.y + bunny.h > home.y
+    ){
+        endGame(true);
+    }
+
+    score++;
+    document.getElementById("score").innerText = score;
+}
+
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // Ground
+    ctx.fillStyle="#228B22";
+    ctx.fillRect(0, groundY, canvas.width, canvas.height-groundY);
+
+    // Bunny
+    ctx.font="35px Arial";
+    ctx.fillText("🐰", bunny.x, bunny.y+30);
+
+    // Plates
+    ctx.fillStyle="#654321";
+    plates.forEach(p=>ctx.fillRect(p.x,p.y,p.w,p.h));
+
+    // Enemies
+    ctx.font="30px Arial";
+    enemies.forEach(e=>ctx.fillText("👾", e.x, e.y+30));
+
+    // Home
+    ctx.font="45px Arial";
+    ctx.fillText("🏡", home.x, home.y);
+}
+
+function loop(){
+    if(!gameRunning) return;
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+loop();
+
+function endGame(win){
+    gameRunning=false;
+
+    if(score>highScore){
+        highScore=score;
+        localStorage.setItem("bunnyHigh", highScore);
+    }
+
+    document.getElementById("highScore").innerText=highScore;
+    document.getElementById("overlay").style.display="flex";
+    document.getElementById("resultText").innerText = win ? "🎉 You Won!" : "💀 Game Over!";
+}
+
+function restartGame(){
+    init();
+    loop();
+}
+</script>
+
+</body>
+</html>
