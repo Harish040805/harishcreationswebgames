@@ -10,6 +10,7 @@ self.addEventListener('install', event => {
         './birdshooting/birdshootinggame.html',
         './bitlife/bitlife.html',
         './boardshooter/boardshooter.html',
+        './bulbsimulation/bulbsimulation.html',
         './spiders/spiders.html',
         './tictactoe/tictactoegame.html',
         './bulbsimulation/bulbsimulation.html',
