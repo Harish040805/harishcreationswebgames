@@ -17,7 +17,8 @@ self.addEventListener('install', event => {
         './laserplaneshoot/laserplaneshoot.html',
         './pingpong/pingpong.html',
         './rotatingwheelgame/rotatingwheelgame.html',
-        './excitonium/excitonium.html'
+        './excitonium/excitonium.html',
+        './peeonthehole/peeonthehole.html'
       ]);
     })
   );
