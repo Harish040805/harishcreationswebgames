@@ -47,12 +47,12 @@
         <div class="top-left-controls">
             <span class="welcome-text">Pee on the Hole</span>
             <br>
-<button id="helloBtn">Instructions</button>
-<div id="popupMenu" class="menu-hidden">
-  <button id="closeBtn">x</button>
-  <p><b>Instruction:</b> Pee correctly within the black colour hole. Click & hold the Penis to pee & release the mouse to adjust your 
-    pee to bring within the hole.</p>
-</div>
+                <button id="helloBtn">Instructions</button>
+                <div id="popupMenu" class="menu-hidden">
+                <button id="closeBtn">x</button>
+                <p><b>Instruction:</b> Pee correctly within the black colour hole. Click & hold the Penis to pee & release the mouse to adjust your 
+                    pee to bring within the hole.</p>
+                </div>
             <br>
             <button class="nav-btn" onclick="location.reload()">🔄 Restart</button>
         </div>
@@ -83,7 +83,6 @@
         const gameOverScreen = document.getElementById('gameOver');
         const finalScoreText = document.getElementById('finalScore');
         const startBtn = document.getElementById('startBtn');
-        
         let score = 0;
         let lastScoreUpdate = 0;
         let isPressing = false;
@@ -116,14 +115,12 @@
                 ctx.fill();
             }
         }
-
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
         window.addEventListener('resize', resize);
         resize();
-
         startBtn.addEventListener('click', () => {
             menu.style.opacity = '0';
             setTimeout(() => {
@@ -133,27 +130,23 @@
                 gameActive = true;
             }, 500);
         });
-
         const startPress = () => { if(gameActive) isPressing = true; };
         const endPress = () => { if(gameActive) isPressing = false; };
         window.addEventListener('mousedown', startPress);
         window.addEventListener('mouseup', endPress);
         window.addEventListener('touchstart', (e) => { e.preventDefault(); startPress(); }, {passive: false});
         window.addEventListener('touchend', endPress);
-
         function update() {
             if (!gameActive) {
                 requestAnimationFrame(update);
                 return;
             }
-
             const rx = canvas.width / 2 - rectWidth / 2;
             const ry = canvas.height - rectHeight - 20;
             const hx = canvas.width / 2;
             const hy = canvas.height * 0.3;
             const holeRadius = 25;
             const topLimit = canvas.height * 0.1;
-
             if (isPressing) {
                 if (ry - lineLength > topLimit) {
                     lineLength += lineSpeed;
@@ -163,7 +156,6 @@
                 if (lineLength > 0) lineLength -= lineSpeed;
                 if (lineLength < 0) lineLength = 0;
             }
-
             if (bladderCapacity <= 0) {
                 bladderCapacity = 0;
                 gameActive = false;
@@ -171,19 +163,16 @@
                 finalScoreText.style.color = "white";
                 gameOverScreen.style.display = 'flex';
             }
-
             meterFill.style.height = bladderCapacity + "%";
-
-            const tipX = canvas.width / 2;
+            let jitter = Math.sin(Date.now() * 0.007) * 4; 
+            const tipX = (canvas.width / 2) + jitter;
             const tipY = ry - lineLength;
             const dist = Math.sqrt(Math.pow(tipX - hx, 2) + Math.pow(tipY - hy, 2));
-
             if (lineLength > 0) {
                 for (let i = 0; i < 2; i++) {
                     splashes.push(new Splash(tipX, tipY));
                 }
             }
-
             if (dist <= holeRadius && lineLength > 0) {
                 const now = Date.now();
                 if (now - lastScoreUpdate >= 1000) {
@@ -192,15 +181,12 @@
                     lastScoreUpdate = now;
                 }
             }
-
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             splashes.forEach((s, index) => {
                 s.update();
                 s.draw();
                 if (s.opacity <= 0) splashes.splice(index, 1);
             });
-
             let whiteGrad = ctx.createLinearGradient(hx - 50, hy, hx + 50, hy + 150);
             whiteGrad.addColorStop(0, "#ffffff");
             whiteGrad.addColorStop(1, "#cccccc");
@@ -208,13 +194,11 @@
             ctx.beginPath();
             ctx.arc(hx, hy, holeRadius + 35, 0, Math.PI * 2);
             ctx.fill();
-
             const baseWidth = 80;
             const baseHeight = 120;
             ctx.beginPath();
             ctx.roundRect(hx - (baseWidth / 2), hy + 35, baseWidth, baseHeight, 10);
             ctx.fill();
-
             const sideRectWidth = 50;
             const sideRectHeight = 80;
             const offset = 15;
@@ -224,7 +208,7 @@
             ctx.beginPath();
             ctx.roundRect(hx + (baseWidth / 2) + offset, hy + 60, sideRectWidth, sideRectHeight, 5);
             ctx.fill();
-
+            let isHitting = (dist <= holeRadius && lineLength > 0);
             let holeGrad = ctx.createRadialGradient(hx, hy, 5, hx, hy, holeRadius);
             holeGrad.addColorStop(0, "#222");
             holeGrad.addColorStop(1, "#000");
@@ -232,7 +216,13 @@
             ctx.beginPath();
             ctx.arc(hx, hy, holeRadius, 0, Math.PI * 2);
             ctx.fill();
-
+            if (isHitting) {
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(hx, hy, (Date.now() % 1000) / 1000 * holeRadius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
             if (lineLength > 0) {
                 ctx.beginPath();
                 ctx.moveTo(hx, ry);
@@ -245,13 +235,11 @@
                 ctx.lineCap = 'round';
                 ctx.stroke();
             }
-
             const yPos = ry + rectHeight - 15;
             let brownGrad = ctx.createLinearGradient(rx, ry, rx + rectWidth, ry + rectHeight);
             brownGrad.addColorStop(0, '#5d2e0d');
             brownGrad.addColorStop(0.5, '#986458');
             brownGrad.addColorStop(1, '#5d2e0d');
-            
             let ovalGrad = ctx.createLinearGradient(hx, yPos - 35, hx, yPos + 35);
             ovalGrad.addColorStop(0, '#5d2e0d');
             ovalGrad.addColorStop(0.5, '#986458');
@@ -263,12 +251,18 @@
             ctx.beginPath();
             ctx.ellipse(rx + (rectWidth / 2) + 20, yPos, 30, 35, 0, 0, Math.PI * 2);
             ctx.fill();
-
             ctx.fillStyle = brownGrad;
             ctx.beginPath();
             ctx.roundRect(rx, ry, rectWidth, rectHeight, 10); 
             ctx.fill();
-
+            let lightSkinGrad = ctx.createLinearGradient(hx, ry, hx, ry + 40);
+            lightSkinGrad.addColorStop(0, '#b07d6a');
+            lightSkinGrad.addColorStop(1, '#986458');
+            ctx.fillStyle = lightSkinGrad;
+            ctx.beginPath();
+            const transitionWidth = rectWidth + 3; 
+            ctx.roundRect(hx - (transitionWidth / 2), ry, transitionWidth, 35, 5);
+            ctx.fill();
             let pinkGrad = ctx.createLinearGradient(hx, ry-30, hx, ry + 20);
             pinkGrad.addColorStop(0, '#D89E94');
             pinkGrad.addColorStop(1, '#AD756A');            
@@ -294,6 +288,16 @@
             ctx.quadraticCurveTo(baseX + semiWidth, baseY, baseX + semiWidth - cornerRadius, baseY);
             ctx.closePath();
             ctx.fill();
+            ctx.strokeStyle = '#965a50';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(baseX + 2, baseY - 5); 
+            ctx.quadraticCurveTo(hx, baseY + 5, baseX + semiWidth - 2, baseY - 5);
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.beginPath();
+            ctx.arc(hx - 10, baseY - 40, 4, 0, Math.PI * 2);
+            ctx.fill();
             requestAnimationFrame(update);
         }
         update();
@@ -301,10 +305,10 @@
         const popupMenu = document.getElementById('popupMenu');
         const closeBtn = document.getElementById('closeBtn');
         helloBtn.onclick = function() {
-        popupMenu.classList.toggle('menu-visible');
+            popupMenu.classList.toggle('menu-visible');
         };
         closeBtn.onclick = function() {
-        popupMenu.classList.remove('menu-visible');
+            popupMenu.classList.remove('menu-visible');
         };
     </script>
 </body>
