@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pee on the Hole Game</title>
+    <title>🍌 Pee on the Hole 💦 | 18+ (Adult Only) Game</title>
     <style>
         body, html { margin: 0; padding: 0; overflow: hidden; height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .game-container { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; 
@@ -12,24 +12,26 @@
         #gameCanvas { display: block; width: 100%; height: 100%; }
         .top-left-controls { position: absolute; top: 20px; left: 20px; display: flex; align-items: center; gap: 15px; z-index: 20; }
         .welcome-text { color: white; font-weight: bold; font-size: 1.2rem; text-shadow: 1px 1px 5px rgba(0,0,0,0.5); }
-        .nav-btn { 
-            padding: 8px 15px; font-size: 16px; background: rgba(255, 255, 255, 0.9); 
-            color: #333; border: none; border-radius: 5px; cursor: pointer; 
-            font-weight: bold; transition: background 0.2s; display: flex; align-items: center; gap: 5px;
-        }
-        .nav-btn:hover { background: #fff; transform: scale(1.05); }
-
-        #menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center;
-            align-items: center; background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%); z-index: 10; transition: opacity 0.5s ease; }
-        h1 { color: white; font-size: 80px; margin-bottom: 20px; text-shadow: 2px 2px 10px rgba(0,0,0,0.2); text-align: center;}
-        
-        #startBtn { padding: 15px 40px; font-size: 20px; background: white; color: #4facfe; border: none; border-radius: 50px; cursor: pointer;
-            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; }
-        button { padding: 15px 40px; font-size: 20px; background: white; color: #4facfe; border: none; border-radius: 50px; cursor: pointer;
-            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; }
-        button:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
-        #scoreBoard { position: absolute; top: 20px; right: 20px; font-size: 24px; color: white; background: rgba(0, 0, 0, 0.3); 
-            padding: 10px 20px; border-radius: 8px; pointer-events: none; user-select: none; display: none; }
+        .nav-btn { padding: 8px 15px; font-size: 16px; background: linear-gradient(to bottom, #ffffff 0%, #e0e0e0 100%); 
+            color: #333; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.2s; display: flex; 
+            align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .nav-btn:hover { background: linear-gradient(to bottom, #f0f0f0 0%, #d0d0d0 100%); }
+        #menu, #gameOver { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); z-index: 30; 
+            transition: opacity 0.5s ease; }
+        #gameOver { display: none; background: rgba(0,0,0,0.85); z-index: 40; }
+        h1 { color: white; font-size: 80px; margin-bottom: 20px; text-shadow: 2px 4px 10px rgba(0,0,0,0.3); text-align: center;}
+        .action-btn { padding: 15px 40px; font-size: 22px; background: linear-gradient(to bottom, #ffffff 0%, #f1f1f1 100%); 
+            color: #4facfe; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: all 0.2s; }
+        #ui-right-container { position: absolute; top: 20px; right: 20px; display: flex; flex-direction: column; align-items: flex-end; 
+            gap: 15px; pointer-events: none; z-index: 20; }
+        #scoreBoard { font-size: 24px; color: white; background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)); 
+            padding: 10px 20px; border-radius: 8px; user-select: none; display: none; border: 1px solid rgba(255,255,255,0.2); }
+        #meterWrapper { width: 30px; height: 250px; background: rgba(0,0,0,0.5); border: 2px solid white; border-radius: 5px; 
+            overflow: hidden; display: none; position: relative; }
+        #meterFill { width: 100%; height: 100%; background-color: #48cae4; position: absolute; bottom: 0; }
+        #finalscore { color: white; margin-bottom: 30px; }
     </style>
 </head>
 <body>
@@ -38,15 +40,34 @@
             <span class="welcome-text">Pee on the Hole</span>
             <button class="nav-btn" onclick="location.reload()">🔄 Restart</button>
         </div>
-        <div id="menu"><h1>PEE 🖕N THE H🕳️LE</h1><button id="startBtn">Start the Game ▶️</button></div>
-        <div id="scoreBoard">Score: 0</div><canvas id="gameCanvas"></canvas>
+        <div id="menu">
+            <h1>PEE 🖕N THE H🕳️LE</h1>
+            <button id="startBtn" class="action-btn">Start the Game ▶️</button>
+        </div>
+        <div id="gameOver">
+            <h1 style="color: #48cae4;">😌 THE BLADDER EMPTIED!</h1>
+            <h2 id="finalScore">Score: 0</h2>
+            <button class="action-btn" onclick="location.reload()">Play Again 🔄</button>
+        </div>
+        <div id="ui-right-container">
+            <div id="scoreBoard">Score: 0</div>
+            <div id="meterWrapper">
+                <div id="meterFill"></div>
+            </div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
     </div>
 <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('scoreBoard');
+        const meterWrapper = document.getElementById('meterWrapper');
+        const meterFill = document.getElementById('meterFill');
         const menu = document.getElementById('menu');
+        const gameOverScreen = document.getElementById('gameOver');
+        const finalScoreText = document.getElementById('finalScore');
         const startBtn = document.getElementById('startBtn');
+        
         let score = 0;
         let lastScoreUpdate = 0;
         let isPressing = false;
@@ -55,49 +76,71 @@
         const rectHeight = 160; 
         let lineLength = 0;
         const lineSpeed = 5; 
+        let bladderCapacity = 100;
+        const depletionRate = 0.05;
+
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
         window.addEventListener('resize', resize);
         resize();
+
         startBtn.addEventListener('click', () => {
             menu.style.opacity = '0';
             setTimeout(() => {
                 menu.style.display = 'none';
                 scoreElement.style.display = 'block';
+                meterWrapper.style.display = 'block';
                 gameActive = true;
             }, 500);
         });
+
         const startPress = () => { if(gameActive) isPressing = true; };
         const endPress = () => { if(gameActive) isPressing = false; };
         window.addEventListener('mousedown', startPress);
         window.addEventListener('mouseup', endPress);
         window.addEventListener('touchstart', (e) => { e.preventDefault(); startPress(); }, {passive: false});
         window.addEventListener('touchend', endPress);
+
         function update() {
             if (!gameActive) {
                 requestAnimationFrame(update);
                 return;
             }
+
             const rx = canvas.width / 2 - rectWidth / 2;
             const ry = canvas.height - rectHeight - 20;
             const hx = canvas.width / 2;
             const hy = canvas.height * 0.3;
             const holeRadius = 25;
             const topLimit = canvas.height * 0.1;
+
             if (isPressing) {
                 if (ry - lineLength > topLimit) {
                     lineLength += lineSpeed;
                 }
+                bladderCapacity -= depletionRate;
             } else {
                 if (lineLength > 0) lineLength -= lineSpeed;
                 if (lineLength < 0) lineLength = 0;
             }
+
+            if (bladderCapacity <= 0) {
+                bladderCapacity = 0;
+                gameActive = false;
+                finalScoreText.innerText = `Final Score: ${score}`;
+                finalScoreText.style.color = "white";
+                gameOverScreen.style.display = 'flex';
+            }
+
+            meterFill.style.height = bladderCapacity + "%";
+
             const tipX = canvas.width / 2;
             const tipY = ry - lineLength;
             const dist = Math.sqrt(Math.pow(tipX - hx, 2) + Math.pow(tipY - hy, 2));
-            if (dist <= holeRadius) {
+
+            if (dist <= holeRadius && lineLength > 0) {
                 const now = Date.now();
                 if (now - lastScoreUpdate >= 1000) {
                     score++;
@@ -105,69 +148,102 @@
                     lastScoreUpdate = now;
                 }
             }
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "white";
+
+            let whiteGrad = ctx.createLinearGradient(hx - 50, hy, hx + 50, hy + 150);
+            whiteGrad.addColorStop(0, "#ffffff");
+            whiteGrad.addColorStop(1, "#cccccc");
+            ctx.fillStyle = whiteGrad;
             ctx.beginPath();
             ctx.arc(hx, hy, holeRadius + 35, 0, Math.PI * 2);
             ctx.fill();
+
             const baseWidth = 80;
             const baseHeight = 120;
             ctx.beginPath();
             ctx.roundRect(hx - (baseWidth / 2), hy + 35, baseWidth, baseHeight, 10);
             ctx.fill();
+
             const sideRectWidth = 50;
             const sideRectHeight = 80;
             const offset = 15;
-            ctx.fillStyle = "white";
             ctx.beginPath();
             ctx.roundRect(hx - (baseWidth / 2) - sideRectWidth - offset, hy + 60, sideRectWidth, sideRectHeight, 5);
             ctx.fill();
             ctx.beginPath();
             ctx.roundRect(hx + (baseWidth / 2) + offset, hy + 60, sideRectWidth, sideRectHeight, 5);
             ctx.fill();
+
+            let holeGrad = ctx.createRadialGradient(hx, hy, 5, hx, hy, holeRadius);
+            holeGrad.addColorStop(0, "#222");
+            holeGrad.addColorStop(1, "#000");
+            ctx.fillStyle = holeGrad;
             ctx.beginPath();
             ctx.arc(hx, hy, holeRadius, 0, Math.PI * 2);
-            ctx.fillStyle = 'black';
             ctx.fill();
+
             if (lineLength > 0) {
                 ctx.beginPath();
                 ctx.moveTo(hx, ry);
                 ctx.lineTo(tipX, tipY);
-                ctx.strokeStyle = 'rgba(255, 252, 196, 0.7)';
+                let streamGrad = ctx.createLinearGradient(hx, ry, tipX, tipY);
+                streamGrad.addColorStop(0, 'rgba(255, 240, 150, 0.8)');
+                streamGrad.addColorStop(1, 'rgba(255, 255, 220, 0.5)');
+                ctx.strokeStyle = streamGrad;
                 ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
                 ctx.stroke();
             }
-            ctx.fillStyle = '#5d2e0d'; 
-            const radiusX = 28;
-            const radiusY = 35;
+
             const yPos = ry + rectHeight - 15;
-
+            let brownGrad = ctx.createLinearGradient(rx, ry, rx + rectWidth, ry + rectHeight);
+            brownGrad.addColorStop(0, '#5d2e0d');
+            brownGrad.addColorStop(0.5, '#986458');
+            brownGrad.addColorStop(1, '#5d2e0d');
+            
+            // Start the gradient slightly above the oval center and end slightly below
+            let ovalGrad = ctx.createLinearGradient(hx, yPos - 35, hx, yPos + 35);
+            ovalGrad.addColorStop(0, '#5d2e0d'); // Lighter brownish-rose
+            ovalGrad.addColorStop(0.5, '#986458');
+            ovalGrad.addColorStop(1, '#5d2e0d'); // Darker chocolate brown
+            ctx.fillStyle = ovalGrad;
             ctx.beginPath();
-            ctx.ellipse(rx + (rectWidth / 2) - 20, yPos, radiusX, radiusY, 0, 0, Math.PI * 2);
+            ctx.ellipse(rx + (rectWidth / 2) - 20, yPos, 35, 35, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(rx + (rectWidth / 2) + 20, yPos, 30, 35, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.beginPath();
-            ctx.ellipse(rx + (rectWidth / 2) + 20, yPos, radiusX, radiusY, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#8b4513';
+            ctx.fillStyle = brownGrad;
             ctx.beginPath();
             ctx.roundRect(rx, ry, rectWidth, rectHeight, 10); 
             ctx.fill();
 
-            ctx.fillStyle = '#ff52dc';
+            let pinkGrad = ctx.createLinearGradient(hx, ry-30, hx, ry + 20);
+            pinkGrad.addColorStop(0, '#D89E94');
+            pinkGrad.addColorStop(1, '#AD756A');            
+            ctx.fillStyle = pinkGrad;
             ctx.beginPath();
-            const side = rectWidth;
-            const height = side * (Math.sqrt(3)/2);
-            const centerX = hx;
-            const topY = ry - 30;
-            ctx.moveTo(centerX, topY);
-            ctx.lineTo(centerX - side/2, topY + height);
-            ctx.lineTo(centerX + side/2, topY + height);
+            const semiWidth = 47;
+            const semiHeight = 75;
+            const cornerRadius = 15;
+            const baseX = hx - semiWidth / 2;
+            const baseY = ry + 20;
+            ctx.moveTo(baseX + cornerRadius, baseY);
+            ctx.quadraticCurveTo(baseX, baseY, baseX, baseY - cornerRadius);
+            ctx.lineTo(baseX, baseY - cornerRadius - 5);
+            const curveTopY = baseY - semiHeight;
+            const cpX1 = baseX;
+            const cpX2 = hx + semiWidth / 2;
+            ctx.bezierCurveTo(
+                cpX1, curveTopY,
+                cpX2, curveTopY,
+                baseX + semiWidth, baseY - cornerRadius - 5
+            );
+            ctx.lineTo(baseX + semiWidth, baseY - cornerRadius);
+            ctx.quadraticCurveTo(baseX + semiWidth, baseY, baseX + semiWidth - cornerRadius, baseY);
             ctx.closePath();
-            ctx.lineJoin = "round";
-            ctx.lineWidth = 12;
-            ctx.strokeStyle = '#ff52dc';
-            ctx.stroke();
             ctx.fill();
             requestAnimationFrame(update);
         }
