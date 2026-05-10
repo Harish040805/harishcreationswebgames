@@ -19,7 +19,8 @@ self.addEventListener('install', event => {
         './pingpong/pingpong.html',
         './rotatingwheelgame/rotatingwheelgame.html',
         './excitonium/excitonium.html',
-        './peeonthehole/peeonthehole.html'
+        './peeonthehole/peeonthehole.html',
+        './fortcapture/fortcapture.html'
       ]);
     })
   );
