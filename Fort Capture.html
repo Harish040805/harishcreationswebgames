@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🏰 Fort Capture 🚩 | Game</title>
+    <style>
+        body { background: #2c3e50; color: white; font-family: 'Courier New', Courier, monospace; text-align: center; }
+        #game-container { position: relative; width: 800px; height: 400px; background: #27ae60; margin: 20px auto; border: 10px solid #795548; overflow: hidden; }
+        .base { position: absolute; width: 50px; height: 100%; background: #34495e; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        #player-base { left: 0; border-right: 5px solid #2ecc71; }
+        #cpu-base { right: 0; border-left: 5px solid #e74c3c; }
+        .unit { position: absolute; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: top 0.1s; }
+        .player-unit { background: #2ecc71; border: 2px solid white; }
+        .cpu-unit { background: #e74c3c; border: 2px solid white; }
+        #ui-panel { margin: 10px; padding: 10px; background: #34495e; border-radius: 10px; display: inline-block; }
+        button { padding: 10px; margin: 5px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🏰 FORT CAPTURE 🚩</h1>
+    <div id="ui-panel">
+        <div>❤️ Player Health: <span id="p-hp">100</span> | ❤️ CPU Health: <span id="c-hp">100</span></div>
+        <button onclick="spawnUnit('soldier')">Soldier (⚔️) (2 Points | 2% Attack)</button>
+        <button onclick="spawnUnit('horse')">Horse (🐎) (5 Points | 10% Attack)</button>
+        <button onclick="spawnUnit('elephant')">Elephant (🐘) (10 Points | 5% Attack)</button>
+    </div>
+    <div id="game-container" id="battlefield"></div>
+    <script>
+        const container = document.getElementById('game-container');
+        let playerHP = 100, cpuHP = 100;
+        let units = [];
+        let gameStateActive = true;
+        const config = {
+            soldier: { icon: '⚔️', hp: 20, speed: 2, power: 5 },
+            horse: { icon: '🐎', hp: 30, speed: 4, power: 10 },
+            elephant: { icon: '🐘', hp: 80, speed: 1, power: 20 }
+        };
+        function spawnUnit(type, isCPU = false) {
+            const unit = {
+                id: Date.now() + Math.random(),
+                type: type,
+                isCPU: isCPU,
+                hp: config[type].hp,
+                x: isCPU ? 750 : 20,
+                y: Math.random() * 350,
+                el: document.createElement('div')
+            };
+            unit.el.className = `unit ${isCPU ? 'cpu-unit' : 'player-unit'}`;
+            unit.el.innerText = config[type].icon;
+            container.appendChild(unit.el);
+            units.push(unit);
+        }
+setInterval(() => {
+    if (gameStateActive) {
+        const types = ['soldier', 'horse', 'elephant'];
+        spawnUnit(types[Math.floor(Math.random() * 3)], true);
+    }
+}, 150);
+
+        function update() {
+            units.forEach((u, idx) => {
+                u.x += u.isCPU ? -config[u.type].speed : config[u.type].speed;
+                u.el.style.left = u.x + 'px';
+                u.el.style.top = u.y + 'px';
+                if (u.x > 760 && !u.isCPU) {
+                    cpuHP -= config[u.type].power;
+                    removeUnit(u, idx);
+                } else if (u.x < 10 && u.isCPU) {
+                    playerHP -= config[u.type].power;
+                    removeUnit(u, idx);
+                }
+                units.forEach((other, oIdx) => {
+                    if (u.isCPU !== other.isCPU) {
+                        const dist = Math.abs(u.x - other.x);
+                        if (dist < 20 && Math.abs(u.y - other.y) < 20) {
+                            u.hp -= 1;
+                            other.hp -= 1;
+                        }
+                    }
+                });
+                if (u.hp <= 0) removeUnit(u, idx);
+            });
+            document.getElementById('p-hp').innerText = playerHP;
+            document.getElementById('c-hp').innerText = cpuHP;
+            if (playerHP <= 0 || cpuHP <= 0) {
+                gameStateActive = false;
+                const msg = playerHP <= 0 ? "GAME OVER - CPU WINS" : "VICTORY - KINGDOM CONQUERED";
+                setTimeout(() => {
+                    alert(msg);
+                    location.reload();
+                }, 100);
+                return;
+            }
+            if (gameStateActive)
+            {
+                requestAnimationFrame(update);
+            }
+        }
+        function removeUnit(unit, index) {
+            unit.el.remove();
+            units.splice(index, 1);
+        }
+        update();
+    </script>
+</body>
+</html>
