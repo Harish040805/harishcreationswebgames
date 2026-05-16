@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rain Simulation SPA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background: linear-gradient(135deg, #4f4f4f, #757575, #696969, #5a5a5a);
+            background-size: 400% 400%; animation: gradientTransition 15s ease-in-out infinite; }
+        @keyframes gradientTransition {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        canvas { display: block; width: 100vw; height: 100vh; }
+    </style>
+</head>
+<body>
+    <canvas id="rainCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('rainCanvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        const raindrops = [];
+        const gravity = 0.2;
+        class Raindrop {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * -canvas.height;
+                this.vy = Math.random() * 2 + 2;
+                this.length = Math.random() * 15 + 10;
+                this.weight = Math.random() * 0.5 + 0.1;
+            }
+            update() {
+                this.vy += gravity * this.weight;
+                this.y += this.vy;
+                if (this.y > canvas.height - 40) {
+                    this.reset();
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 1.5;
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, this.y + this.length);
+                ctx.stroke();
+            }
+        }
+        const treeProfiles = [];
+        function generateTrees() {
+            treeProfiles.length = 0;
+            let currentX = -20;
+            while (currentX < canvas.width + 60) {
+                const trunkWidth = Math.random() * 6 + 8;
+                const trunkHeight = Math.random() * 40 + 50;
+                const canopyRadius = Math.random() * 25 + 30;
+                treeProfiles.push({
+                    x: currentX,
+                    trunkW: trunkWidth,
+                    trunkH: trunkHeight,
+                    radius: canopyRadius
+                });
+                currentX += Math.random() * 40 + 40;
+            }
+        }
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            generateTrees();
+        });
+let swayTime = 0;
+        function drawBackgroundElements() {
+            if (treeProfiles.length === 0) {
+                generateTrees();
+            }
+            swayTime += 0.04;
+            for (let i = 0; i < treeProfiles.length; i++) {
+                const tree = treeProfiles[i];
+                const sway = Math.sin(swayTime + i) * 2.5;
+                ctx.fillStyle = '#2d1e11';
+                ctx.beginPath();
+                ctx.moveTo(tree.x - tree.trunkW / 2, canvas.height - 40);
+                ctx.lineTo(tree.x + tree.trunkW / 2, canvas.height - 40);
+                ctx.lineTo(tree.x + tree.trunkW / 2 + sway, canvas.height - 40 - tree.trunkH);
+                ctx.lineTo(tree.x - tree.trunkW / 2 + sway, canvas.height - 40 - tree.trunkH);
+                ctx.fill();
+                ctx.fillStyle = '#1e2511';
+                const canopyX = tree.x + sway;
+                const canopyY = canvas.height - 40 - tree.trunkH;
+                ctx.beginPath();
+                ctx.arc(canopyX, canopyY, tree.radius, 0, Math.PI * 2);
+                ctx.arc(canopyX - tree.radius * 0.5, canopyY + tree.radius * 0.2, tree.radius * 0.7, 0, Math.PI * 2);
+                ctx.arc(canopyX + tree.radius * 0.5, canopyY + tree.radius * 0.2, tree.radius * 0.7, 0, Math.PI * 2);
+                ctx.arc(canopyX, canopyY - tree.radius * 0.4, tree.radius * 0.8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.fillStyle = '#3d2817';
+            ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+            ctx.fillStyle = '#2d1e11';
+            ctx.fillRect(0, canvas.height - 15, canvas.width, 15);
+        }
+        function init() {
+            for (let i = 0; i < 150; i++) {
+                raindrops.push(new Raindrop());
+            }
+        }
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);   
+            drawBackgroundElements();
+            for (let i = 0; i < raindrops.length; i++) {
+                raindrops[i].update();
+                raindrops[i].draw();
+            }
+            requestAnimationFrame(animate);
+        }
+        init();
+        animate();
+    </script>
+</body>
+</html>
