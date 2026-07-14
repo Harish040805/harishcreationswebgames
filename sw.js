@@ -21,7 +21,8 @@ self.addEventListener('install', event => {
         './excitonium/excitonium.html',
         './peeonthehole/peeonthehole.html',
         './fortcapture/fortcapture.html',
-        './rainsimulationgame/rainsimulationgame.html'
+        './rainsimulationgame/rainsimulationgame.html',
+        './vaultbreach.html'
       ]);
     })
   );
