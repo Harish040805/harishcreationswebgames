@@ -34,23 +34,24 @@
     const commonQuestions = [
         { text: "Hello! Shall we start the game? &#128139;", options: ["Lets go!", "Hold on please!"] },
         { text: "Are you 18+ to play this game? 🔞", options: ["Yes", "No"] },
-		    { text: "Please choose your sex ⚧️", options: ["♀️ Female", "♂️ Male"] },
-		    { text: "Are you an introvert or extrovert?", options: ["Extrovert 🥂", "Introvert 📖"] },
+		{ text: "Please choose your sex ⚧️", options: ["♀️ Female", "♂️ Male"] },
+	    { text: "Are you an introvert or extrovert?", options: ["Extrovert 🥂", "Introvert 📖"] },
         { text: "💦 When your friends talk about porns, would you...", options: ["😂 Talk and laugh together", "😑 Move away from that place"] },
         { text: "🥵 Have you ever watched porns in your lifetime?", options: ["Yes! Dirty mind is always dirty 😁", "No! I am a good one! 😌"] },
         { text: "How will you react when you accidentally seen someone nude? 🚧", options: ["🤤 Stare at them curiously", "🫣 Close your eyes immediately"] },
         { text: "Do you like kiss scenes when shown in films? 💋", options: ["😍 Yes! Love seeing such scenes in films", "😡 No! Hate such scenes!"] },
         { text: "💋 What will you do if you see such scenes coming in films?", options: ["🤤 I watch those two lips of opposite sex gets connected", "🫣 I immeadiately change the channel!"] },        
-		    { text: "How do you like to sleep at nights? 🌙", options: ["🍆 I always love sleeping nude", "👚 I wear a decent, comfortable costume"] },
+		{ text: "How do you like to sleep at nights? 🌙", options: ["🍆 I always love sleeping nude", "👚 I wear a decent, comfortable costume"] },
         { text: "🛁 When will you dry your body after taking a bath?", options: ["🚶🏻‍♂️ I walk around nude and let them dry", "🧖‍♂️ Immediately after my bath, I dry myself"] },
-		    { text: "What is your favorite movie? 🎬", options: ["🚢 Titanic, Wolf of Wall Street, Game of Thrones", "🧞‍♂️ Aladdin, Luca, Kung Fu Panda"] },
+	    { text: "What is your favorite movie? 🎬", options: ["🚢 Titanic, Wolf of Wall Street, Game of Thrones", "🧞‍♂️ Aladdin, Luca, Kung Fu Panda"] },
+		{ text: "Will you drink beer? 🍻", options: ["🍻 Yes! I do drink beer and other hot drinks!", "🍃 I have never drank beer or other hot drinks"] },
         { text: "🚪 Would you close your bathroom door while you bath?", options: ["🙂‍↔️ Not preferentially! It will usually be kept open when I bath", "🙂‍↕️ Yes! I always close the door when I bath"] },
         { text: "Would you mind bathing nude with your friends? 🫂", options: ["I don't mind bathing with friends and others 🤗", "I love bathing alone in private 🧖🏻‍♀️"] },
         { text: "Do you like nuru massage and nude oil massages? 💆🏻", options: ["I love them a lot 💆🏻‍♂️", "I hate such massages 😠"] },
-	    	{ text: "💪🏻 How to you prefer to dress when you go for a gym?", options: ["🫦 I prefer to dress hot and sexy that I grab everyone's attention", "👔 I prefer to dress in a descent suit that fits me"] },
-	    	{ text: "How will you react if someone reveals their private areas? 🍌", options: ["I will close my mouth in awe 😱", "I will close my eyes in awe 🙈"] },
-	    	{ text: "Do you prefer rough sex or erotic kind of one? 😳", options: ["I always prefer rough sex 🖕", "Erotic kind of one is better that rough sex"] },
-	    	{ text: "When do you think is the right time to have sex with your partner?", options: ["Love to play before wedding day!", "This kind of stuff should be done strictly after marriage"] }
+	    { text: "💪🏻 How to you prefer to dress when you go for a gym?", options: ["🫦 I prefer to dress hot and sexy that I grab everyone's attention", "👔 I prefer to dress in a descent suit that fits me"] },
+		{ text: "How will you react if someone reveals their private areas? 🍌", options: ["I will close my mouth in awe 😱", "I will close my eyes in awe 🙈"] },
+	    { text: "Do you prefer rough sex or erotic kind of one? 😳", options: ["I always prefer rough sex 🖕", "Erotic kind of one is better that rough sex"] },
+	    { text: "When do you think is the right time to have sex with your partner?", options: ["Love to play before wedding day!", "This kind of stuff should be done strictly after marriage"] }
     ];
 	const maleQuestions = [
 	    { text: "What is your opinion on touching girls' hip?", options: ["It is an interesting thing to do", "I respect others"] },
@@ -58,7 +59,7 @@
 	    { text: "Have you ever thought of your mom or your sister in a wrong sense?", options: ["I have a buring desire to see them nude", "My family is my protection, I am their protection"] }
 	];
 	const femaleQuestions = [
-		  { text: "What is your opinion on touching a boy's dick?", options: ["It is an interesting thing to do", "I respect others"] },
+		{ text: "What is your opinion on touching a boy's dick?", options: ["It is an interesting thing to do", "I respect others"] },
 	  	{ text: "In occasions, will you allow your friend to help you change your dress?", options: ["Yes! I allow my friend to help me change my dress, even if I am naked", "No! I maintain my dignity and will not allow anyone in my private space (including my friends)"] },
 	    { text: "How will you react if you see a boy's dick is being exposed when he pees?", options: ["Take it in a casual sense", "Take it seriously and move away from that spot"] }
     ];    	
@@ -68,16 +69,13 @@
 	    [arr[i], arr[j]] = [arr[j], arr[i]];
 	  }
 	}
-
 	let fixedQ = commonQuestions.slice(0, 3);
 	let randomQ = commonQuestions.slice(3);
 	shuffleArray(randomQ);
-	
 	let questions = [...fixedQ, ...randomQ];
 	let index = 0;
 	let score = 0;
 	let genderSelected = null;
-	
 	function nextQuestion(choice) {
 	    if (index === 0 && choice === 0) { endGame("You chose to stop. Game Over!"); return; }
 	    if (index === 1 && choice === 0) { endGame("You are not eligible to play. Game Over!"); return; }
@@ -99,7 +97,14 @@
 	        document.getElementById("btn1").textContent = questions[index].options[0];
             document.getElementById("btn2").textContent = questions[index].options[1];
 	    } 
-	    else { endGame("Thank you! Your Score: " + score + " % dirty"); }
+	    else {
+		    let p = Math.round((score / questions.length) * 100);
+		    if (p > 60) {
+		      endGame("💋 You are " + p + "% dirty 👙");
+		    } else {
+		      endGame("😇 You are " + p + "% dirty 😌");
+			}
+		}
 	}
     function endGame(message) {
         if (message.startsWith("Thank you")) { message = "Thank you! Your Score: " + Math.round((score / index) * 100) + "% dirty"; }
