@@ -62,27 +62,45 @@
 	  	{ text: "In occasions, will you allow your friend to help you change your dress?", options: ["Yes! I allow my friend to help me change my dress, even if I am naked", "No! I maintain my dignity and will not allow anyone in my private space (including my friends)"] },
 	    { text: "How will you react if you see a boy's dick is being exposed when he pees?", options: ["Take it in a casual sense", "Take it seriously and move away from that spot"] }
     ];    	
-    let questions = [...commonQuestions];
-    let index = 0;
-    let score = 0;
-    let genderSelected = null;
-    function nextQuestion(choice) {
-        if (index === 0 && choice === 0) { endGame("You chose to stop. Game Over!"); return; }
-        if (index === 1 && choice === 0) { endGame("You are not eligible to play. Game Over!"); return; }
-        if (index === 2) {
-            genderSelected = questions[index].options[choice];
-            if (genderSelected === "Female") { questions = [...questions, ...maleQuestions]; } 
-            else if (genderSelected === "Male") { questions = [...questions, ...femaleQuestions]; }
-        }
-        score += choice;
+	function shuffleArray(arr) {
+	  for (let i = arr.length - 1; i > 0; i--) {
+	    let j = Math.floor(Math.random() * (i + 1));
+	    [arr[i], arr[j]] = [arr[j], arr[i]];
+	  }
+	}
+
+	let fixedQ = commonQuestions.slice(0, 3);
+	let randomQ = commonQuestions.slice(3);
+	shuffleArray(randomQ);
+	
+	let questions = [...fixedQ, ...randomQ];
+	let index = 0;
+	let score = 0;
+	let genderSelected = null;
+	
+	function nextQuestion(choice) {
+	    if (index === 0 && choice === 0) { endGame("You chose to stop. Game Over!"); return; }
+	    if (index === 1 && choice === 0) { endGame("You are not eligible to play. Game Over!"); return; }
+	    if (index === 2) {
+			genderSelected = questions[index].options[choice];
+		    let genderQ = [];
+		    if (genderSelected === "Female") {
+		      genderQ = [...maleQuestions];
+			} else if (genderSelected === "Male") {
+		      genderQ = [...femaleQuestions];
+		    }
+		    shuffleArray(genderQ);
+			questions = [...questions, ...genderQ];
+		  }
+	    score += choice;
         index++;
-        if (index < questions.length) {
-            document.getElementById("question").textContent = questions[index].text;
-            document.getElementById("btn1").textContent = questions[index].options[0];
+	    if (index < questions.length) {
+	        document.getElementById("question").textContent = questions[index].text;
+	        document.getElementById("btn1").textContent = questions[index].options[0];
             document.getElementById("btn2").textContent = questions[index].options[1];
-        } 
-        else { endGame("Thank you! Your Score: " + score + " % dirty"); }
-    }
+	    } 
+	    else { endGame("Thank you! Your Score: " + score + " % dirty"); }
+	}
     function endGame(message) {
         if (message.startsWith("Thank you")) { message = "Thank you! Your Score: " + Math.round((score / index) * 100) + "% dirty"; }
         document.getElementById("question").textContent = message;
