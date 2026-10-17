@@ -7,22 +7,22 @@ self.addEventListener('install', event => {
         './',
         './index.html',
         './archerymaster/archerymaster.html',
-        './birdshooting/birdshootinggame.html',
+        './birdshootinggame/birdshootinggame.html',
         './bitlife/bitlife.html',
         './boardshooter/boardshooter.html',
         './bulbsimulation/bulbsimulation.html',
-        './spiders/spiders.html',
-        './tictactoe/tictactoegame.html',
-        './bulbsimulation/bulbsimulation.html',
+        './bunnyhome/bunnyhome.html',
+        './excitonium/excitonium.html',
+        './fortcapture/fortcapture.html',
         './hackedwindow/hackedwindow.html',
         './laserplaneshoot/laserplaneshoot.html',
-        './pingpong/pingpong.html',
-        './rotatingwheelgame/rotatingwheelgame.html',
-        './excitonium/excitonium.html',
         './peeonthehole/peeonthehole.html',
-        './fortcapture/fortcapture.html',
+        './pingpong/pingpong.html',
         './rainsimulationgame/rainsimulationgame.html',
-        './vaultbreach.html'
+        './rotatingwheelgame/rotatingwheelgame.html',
+        './spiders/spiders.html',
+        './tictactoegame/tictactoegame.html',
+        './vaultbreach/vaultbreach.html'
       ]);
     })
   );
