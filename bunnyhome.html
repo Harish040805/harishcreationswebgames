@@ -161,14 +161,29 @@ function draw(){
     ctx.font="45px Arial";
     ctx.fillText("🏡", home.x, home.y);
 }
-function loop(){
-    if(!gameRunning) return;
-    update();
-    draw();
-    requestAnimationFrame(loop);
+function loop() {
+  if (!gameRunning || !gameStarted) return;
+  update();
+  draw();
+  requestAnimationFrame(loop);
 }
-loop();
-function endGame(win){
+let gameStarted = false;
+
+function showStartOverlay() {
+  document.getElementById("overlay").style.display = "flex";
+  document.getElementById("resultText").innerHTML = '🐰 Bunny Home<br><button onclick="startGame()" style="margin-top: 15px; padding: 10px 20px; font-size: 18px; cursor: pointer;">▶️ Start Game</button>';
+}
+
+function startGame() {
+  gameStarted = true;
+  document.getElementById("overlay").style.display = "none";
+  init();
+  loop();
+}
+
+showStartOverlay();
+
+function endGame(win) {
     gameRunning=false;
     if(score>highScore){
         highScore=score;
@@ -176,11 +191,12 @@ function endGame(win){
     }
     document.getElementById("highScore").innerText=highScore;
     document.getElementById("overlay").style.display="flex";
-    document.getElementById("resultText").innerText = win ? "🎉 You Won!" : "💀 Game Over!";
+    document.getElementById("resultText").innerText = win ? `Score: ${score}\nYou Won!` : "💀 Game Over!";
 }
-function restartGame(){
-    init();
-    loop();
+function restartGame() {
+  gameStarted = true;
+  init();
+  loop();
 }
 </script>
 </body>
