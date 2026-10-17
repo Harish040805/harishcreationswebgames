@@ -91,7 +91,6 @@ let highScore = 0;
 try { highScore = parseInt(localStorage.getItem("bunnyHigh"), 10) || 0; } catch (e) {}
 $("highScore").textContent = highScore;
 const keys = { left:false, right:false, up:false };
-
 function setKey(k, v){ keys[k] = v; }
 addEventListener("keydown", e => {
   const m = { ArrowLeft:"left", ArrowRight:"right", ArrowUp:"up", " ":"up", a:"left", d:"right", w:"up" }[e.key];
@@ -106,7 +105,6 @@ addEventListener("keyup", e => {
   b.addEventListener("pointerdown", e => { e.preventDefault(); setKey(k, true); });
   ["pointerup","pointerleave","pointercancel"].forEach(ev => b.addEventListener(ev, () => setKey(k, false)));
 });
-
 function resize(){
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   W = innerWidth; H = innerHeight;
@@ -116,7 +114,6 @@ function resize(){
   groundY = H * 0.85;
   if (state === "ready" || state === "over") init();
 }
-
 function init(){
   bunny = { x:60, y:groundY - 40, w:40, h:40, dy:0, jumping:false, onPlate:null, face:1 };
   const span = Math.max(W - 140, 200);
@@ -125,8 +122,6 @@ function init(){
   home = { x:W - 90, y:groundY - 280, size:50 };
   carrots = [0,1,2,3].map(i => ({ x:plates[i].x + 55, y:plates[i].y - 48, taken:false }));
   carrots.push({ x:W * 0.45, y:groundY - 40, taken:false });
-
-  // Enemies spawn well away from the bunny and the cottage, so nobody starts in trouble.
   enemies = [];
   const n = Math.floor(Math.random() * 4) + 5;
   let tries = 0;
@@ -145,20 +140,17 @@ function init(){
   score = 0; frames = 0; got = 0;
   updateHud();
 }
-
 function updateHud(){
   $("score").textContent = score;
   $("carrots").textContent = got + "/" + CARROT_COUNT;
   $("time").textContent = (frames / 60).toFixed(1) + "s";
 }
-
 function showOverlay(emoji, title, text, btn){
   $("oEmoji").textContent = emoji; $("oTitle").textContent = title;
   $("oText").textContent = text; $("startBtn").textContent = btn;
   $("overlay").classList.remove("hidden");
   $("startBtn").focus();
 }
-
 function beginRound(){
   init();
   state = "countdown"; countdown = 180;
@@ -166,14 +158,12 @@ function beginRound(){
   $("startBtn").blur();
 }
 $("startBtn").addEventListener("click", () => {
-  // Play Again simply reloads the page: fresh game and the start screen.
   if (state === "over") location.reload();
   else beginRound();
 });
-
 function endGame(win){
   if (state === "over") return;
-  if (win) score += Math.max(0, 1000 - Math.floor(frames / 6));
+  score = computeScore(win);
   state = "over";
   let newBest = score > highScore;
   if (newBest){
@@ -186,12 +176,15 @@ function endGame(win){
   if (win) showOverlay("🏡", "You made it home!", "Score " + score + " with " + got + " of " + CARROT_COUNT + " carrots in " + (frames/60).toFixed(1) + "s." + extra, "🔄 Play Again");
   else showOverlay("💥", "Caught by an alien", "You collected " + got + " carrots and scored " + score + "." + extra + " Give it another hop.", "🔄 Play Again");
 }
-
+function computeScore(win){
+  const seconds = frames / 60;
+  let s = got * 200;
+  if (win) s += 500 + Math.max(0, Math.round(1000 - 10 * seconds));
+  return s;
+}
 const hit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-
 function step(){
   if (state === "countdown"){
-    // Everything is frozen (bunny, platforms, aliens) until the timer ends.
     clouds.forEach(c => { c.x += c.s * 0.3; if (c.x > W + 80) c.x = -80; });
     if (--countdown <= 0) state = "playing";
     frames = 0;
@@ -216,27 +209,23 @@ function step(){
   });
   if (bunny.onPlate) bunny.x += bunny.onPlate.dx;
   bunny.x = Math.max(0, Math.min(W - bunny.w, bunny.x));
-
   clouds.forEach(c => { c.x += c.s * 0.3; if (c.x > W + 80) c.x = -80; });
-
   enemies.forEach(e => {
     e.x += e.dx;
     if (e.x < 0 || e.x + e.w > W) e.dx *= -1;
     if (hit(bunny, e)) endGame(false);
   });
   carrots.forEach(c => {
-    if (!c.taken && hit(bunny, { x:c.x, y:c.y, w:34, h:34 })){ c.taken = true; got++; score += 100; }
+    if (!c.taken && hit(bunny, { x:c.x, y:c.y, w:34, h:34 })){ c.taken = true; got++; score = computeScore(false); }
   });
   if (hit(bunny, home)) endGame(true);
   updateHud();
 }
-
 function emoji(txt, x, y, size, flip){
   ctx.font = size + "px 'Segoe UI Emoji','Apple Color Emoji',sans-serif";
   if (flip){ ctx.save(); ctx.translate(x + size / 2, 0); ctx.scale(-1, 1); ctx.fillText(txt, -size / 2, y); ctx.restore(); }
   else ctx.fillText(txt, x, y);
 }
-
 function draw(){
   const css = getComputedStyle(document.documentElement);
   const v = n => css.getPropertyValue(n).trim();
@@ -272,7 +261,6 @@ function draw(){
     ctx.textAlign = "left";
   }
 }
-
 let last = 0, acc = 0;
 function frame(t){
   requestAnimationFrame(frame);
@@ -283,10 +271,9 @@ function frame(t){
   }
   draw();
 }
-
 resize();
 addEventListener("resize", resize);
-showOverlay("🐰", "Bunny Home", "Hop across the moving platforms, grab the carrots and reach the cottage. Dodge the aliens!", "▶️ Start Game");
+showOverlay("🐰", "Bunny Home", "Grab carrots (200 each) and reach the cottage (500 + a time bonus, faster is better). Dodge the aliens!", "▶️ Start Game");
 requestAnimationFrame(frame);
 </script>
 </body>
