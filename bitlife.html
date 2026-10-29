@@ -85,9 +85,9 @@
 			genderSelected = questions[index].options[choice];
 		    let genderQ = [];
 			if (genderSelected === "♀️ Female") {
-		      genderQ = [...femaleQuestions];
-		    } else if (genderSelected === "♂️ Male") {
 		      genderQ = [...maleQuestions];
+		    } else if (genderSelected === "♂️ Male") {
+		      genderQ = [...femaleQuestions];
 		    }
 		    let r = [...randomQ, ...genderQ];
 		    shuffleArray(r);
