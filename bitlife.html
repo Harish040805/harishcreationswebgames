@@ -102,10 +102,12 @@
 	    } 
 	    else {
 		    let p = Math.round((score / questions.length) * 100);
-		    if (p > 60) {
-		      endGame("💋 You are " + p + "% dirty 👙");
-		    } else {
-		      endGame("😇 You are " + p + "% dirty 😌");
+			if (p > 60) { 
+			    endGame("💋 Absolutely Wild! You are " + p + "% dirty 👙"); 
+			} else if (p >= 30) { 
+			    endGame("😏 A Bit Cheeky! You are " + p + "% dirty 🎭"); 
+			} else { 
+			    endGame("😇 Total Angel! You are only " + p + "% dirty 😌"); 
 			}
 		}
 	}
