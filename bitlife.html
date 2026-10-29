@@ -74,8 +74,7 @@
 	}
 	let fixedQ = commonQuestions.slice(0, 3);
 	let randomQ = commonQuestions.slice(3);
-	shuffleArray(randomQ);
-	let questions = [...fixedQ, ...randomQ];
+	let questions = [...fixedQ];
 	let index = 0;
 	let score = 0;
 	let genderSelected = null;
@@ -90,8 +89,9 @@
 		    } else if (genderSelected === "♂️ Male") {
 		      genderQ = [...maleQuestions];
 		    }
-		    shuffleArray(genderQ);
-			questions = [...questions, ...genderQ];
+		    let r = [...randomQ, ...genderQ];
+		    shuffleArray(r);
+		    questions = [...questions, ...r];
 		  }
 	    score += choice;
         index++;
