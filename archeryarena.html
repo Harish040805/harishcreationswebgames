@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archery Arena | Precision Challenge</title>
+<style>
+:root {
+    --bg:#101713;
+    --panel:#1a241e;
+    --panel2:#222e26;
+    --green:#b9df91;
+    --gold:#e9c078;
+    --muted:#89988e;
+    --white:#f3f5ef;
+    --border:rgba(255,255,255,.09);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+    min-height:100vh;padding:22px;
+    background:radial-gradient(ellipse at 50% 0%,#24382b,transparent 55%),#101713;
+    color:var(--white);font-family:Arial,Helvetica,sans-serif
+}
+button,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:1450px;margin:auto}
+header{
+    height:65px;display:flex;justify-content:space-between;
+    align-items:center;margin-bottom:18px
+}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{
+    width:46px;height:46px;border-radius:14px;
+    display:grid;place-items:center;
+    background:linear-gradient(145deg,#d6e8b8,#83ad69);
+    color:#17251b;font-size:27px;font-weight:bold
+}
+.brand h1{font-size:21px;letter-spacing:1.5px}
+.brand p{font-size:10px;letter-spacing:2.5px;color:var(--muted);margin-top:5px}
+.header-right{display:flex;align-items:center;gap:12px}
+.live{
+    display:flex;align-items:center;gap:8px;font-size:11px;
+    letter-spacing:1px;padding:10px 14px;border:1px solid var(--border);
+    border-radius:30px;background:#ffffff08;color:#c5d8c4
+}
+.live i{height:7px;width:7px;border-radius:50%;background:#a8e18b;box-shadow:0 0 9px #a8e18b}
+.sound{
+    width:40px;height:40px;border:1px solid var(--border);
+    background:var(--panel);color:var(--green);border-radius:12px
+}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:18px}
+.game-panel,.side-panel{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:19px;overflow:hidden
+}
+.game-header{
+    min-height:72px;display:flex;align-items:center;
+    justify-content:space-between;padding:15px 21px;gap:15px
+}
+.game-header h2{font-size:17px;margin-bottom:5px}
+.game-header p{font-size:11px;color:var(--muted)}
+select{
+    background:var(--panel2);border:1px solid var(--border);
+    color:var(--green);padding:10px 12px;border-radius:9px;outline:none
+}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;padding:0 16px 16px}
+.hud-item{padding:12px 14px;background:#ffffff06;border:1px solid var(--border);border-radius:11px}
+.hud-item label{font-size:9px;letter-spacing:1.3px;color:var(--muted)}
+.hud-item div{font-size:24px;font-weight:bold;margin-top:5px}
+.hud-item small{font-size:11px;color:var(--muted);font-weight:normal}
+.game-area{
+    margin:0 15px;position:relative;overflow:hidden;
+    border:1px solid #ffffff16;border-radius:13px;
+    background:#263d2c;touch-action:none;user-select:none
+}
+canvas{width:100%;display:block;height:auto;touch-action:none;cursor:crosshair}
+.scene-label,.target-label{
+    position:absolute;top:14px;font-size:9px;letter-spacing:2px;
+    color:#e1e8d5;opacity:.8;pointer-events:none
+}
+.scene-label{left:15px}
+.target-label{right:15px}
+.wind-indicator{
+    position:absolute;z-index:2;top:10px;left:50%;transform:translateX(-50%);
+    min-width:205px;padding:8px 12px;display:flex;align-items:center;justify-content:center;
+    gap:10px;border:1px solid rgba(255,255,255,.2);border-radius:11px;
+    background:rgba(13,25,17,.78);backdrop-filter:blur(7px);
+    box-shadow:0 5px 18px #0003;pointer-events:none
+}
+.wind-symbol{font-size:22px;line-height:1;color:#e9c078;min-width:25px;text-align:center}
+.wind-copy{display:flex;flex-direction:column;gap:3px}
+.wind-copy strong{font-size:10px;letter-spacing:1px;color:#f3f5ef}
+.wind-copy small{font-size:9px;color:#c1d0bf;letter-spacing:.5px}
+.wind-count{font-size:13px;font-weight:bold;color:#e9c078;font-variant-numeric:tabular-nums}
+.wind-indicator.shift{border-color:#e9c078;box-shadow:0 0 18px #e9c07855}
+@media(max-width:600px){
+    .wind-indicator{top:35px;min-width:175px;padding:6px 9px;gap:7px}
+    .wind-symbol{font-size:19px}
+    .wind-copy strong{font-size:9px}
+    .wind-copy small{font-size:8px}
+    .wind-count{font-size:11px}
+}
+.message{
+    position:absolute;top:48%;left:50%;transform:translate(-50%,-50%);
+    font-size:17px;font-weight:bold;letter-spacing:2px;color:white;
+    text-shadow:0 2px 12px #000;pointer-events:none;text-align:center;width:90%
+}
+.message small{
+    display:block;margin-top:9px;font-size:10px;font-weight:normal;
+    letter-spacing:1px;color:#d7e3ce
+}
+.controls{
+    display:flex;justify-content:space-between;align-items:center;
+    gap:18px;padding:17px 19px
+}
+.power{flex:1;min-width:130px}
+.power-head{
+    display:flex;justify-content:space-between;font-size:10px;
+    letter-spacing:1px;color:#bdcabe;margin-bottom:9px
+}
+.power-head strong{color:var(--gold)}
+.power-track{height:7px;background:#34443a;border-radius:20px;overflow:hidden}
+.power-fill{height:100%;width:0;background:linear-gradient(90deg,#8bbd70,#e9c078);border-radius:20px}
+.actions{display:flex;gap:9px}
+.btn{padding:12px 17px;border-radius:9px;border:none;font-size:11px;font-weight:bold;transition:filter .2s}
+.btn:hover{filter:brightness(1.13)}
+.primary{background:var(--green);color:#19251b}
+.secondary{background:#304036;border:1px solid var(--border);color:#e0e9df}
+.side-panel{padding:18px;display:flex;flex-direction:column;gap:21px}
+.side-title{font-size:14px;margin-bottom:12px}
+.record{
+    padding:18px;background:linear-gradient(145deg,#344b37,#25382b);
+    border:1px solid #b9df9120;border-radius:13px
+}
+.record label{color:#c2d3b9;font-size:10px;letter-spacing:1.2px}
+.record strong{display:block;font-size:42px;color:var(--gold);margin:7px 0}
+.record small{color:#a8bba6;font-size:10px}
+.progress{display:flex;gap:5px;margin-top:14px}
+.progress span{height:5px;flex:1;background:#52674f;border-radius:5px}
+.progress span.done{background:var(--green)}
+.history{display:flex;flex-direction:column;gap:8px}
+.history-row{
+    padding:11px;background:#ffffff06;border-radius:9px;
+    display:flex;justify-content:space-between;align-items:center;font-size:11px
+}
+.history-row span{color:#afbeb1}
+.history-row strong{color:var(--gold)}
+.empty{font-size:11px;color:var(--muted);padding:10px 0}
+.tip{
+    margin-top:auto;padding:15px;background:#e9c0780c;
+    border:1px solid #e9c07822;border-radius:12px
+}
+.tip h4{color:var(--gold);font-size:11px;margin-bottom:8px}
+.tip p{font-size:11px;line-height:1.7;color:#adbcad}
+footer{text-align:center;padding:20px;color:#718078;font-size:10px;letter-spacing:1px}
+.overlay{
+    position:fixed;inset:0;z-index:5;background:#07100bd9;
+    backdrop-filter:blur(9px);display:none;place-items:center;padding:15px
+}
+.overlay.show{display:grid}
+.result{
+    width:min(390px,100%);padding:30px;background:#1c2a21;
+    border:1px solid var(--border);border-radius:20px;text-align:center;
+    box-shadow:0 25px 80px #0008;animation:appear .3s ease
+}
+@keyframes appear{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+.result-icon{font-size:40px}
+.result h2{font-size:23px;margin:12px 0 7px}
+.result p{font-size:11px;color:var(--muted)}
+.result-score{font-size:53px;color:var(--gold);font-weight:bold;margin:20px}
+.result-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.result-stats div{padding:13px;background:#ffffff08;border-radius:10px}
+.result-stats small{display:block;font-size:9px;color:var(--muted);margin-bottom:6px}
+.result-stats strong{font-size:17px}
+.difficulty{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:0 19px 14px;font-size:10px;color:var(--muted)
+}
+.difficulty strong{color:var(--gold)}
+@media(max-width:950px){
+    .layout{grid-template-columns:1fr}
+    .side-panel{display:grid;grid-template-columns:1fr 1fr}
+    .tip{margin-top:0}
+}
+@media(max-width:600px){
+    body{padding:10px}
+    header{margin-bottom:10px}
+    .brand h1{font-size:16px}
+    .brand p{font-size:8px}
+    .logo{width:39px;height:39px}
+    .live{display:none}
+    .game-header{flex-wrap:wrap;padding:14px}
+    .game-header select{width:100%}
+    .hud{padding:0 10px 12px;gap:6px}
+    .hud-item{padding:10px}
+    .hud-item div{font-size:20px}
+    .game-area{margin:0 9px}
+    .controls{flex-wrap:wrap;padding:13px}
+    .power{flex-basis:100%}
+    .actions{width:100%}
+    .actions button{flex:1}
+    .side-panel{display:flex;padding:14px}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<header>
+    <div class="brand">
+        <div class="logo">⌖</div>
+        <div>
+            <h1>ARCHERY ARENA</h1>
+            <p>FIRST PERSON PRECISION</p>
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="live"><i></i> RANGE ACTIVE</div>
+        <button class="sound" id="soundBtn">♫</button>
+    </div>
+</header>
+
+<main class="layout">
+<section class="game-panel">
+
+    <div class="game-header">
+        <div>
+            <h2>Precision Shooting Range</h2>
+            <p>Focus on the target. Fight the tremor. Find your shot.</p>
+        </div>
+        <select id="mode">
+            <option value="practice">Free Practice</option>
+            <option value="challenge">Timed Challenge · 60s</option>
+            <option value="competition">Competition · 10 Arrows</option>
+        </select>
+    </div>
+
+    <div class="hud">
+        <div class="hud-item"><label>TOTAL SCORE</label><div id="score">0</div></div>
+        <div class="hud-item"><label>ARROWS LEFT</label><div id="arrows">∞</div></div>
+        <div class="hud-item"><label>ACCURACY</label><div id="accuracy">0<small>%</small></div></div>
+        <div class="hud-item"><label>TIME LEFT</label><div id="timer">--</div></div>
+    </div>
+
+    <div class="game-area">
+        <div class="scene-label">ARCHERY ARENA / RANGE 01</div>
+        <div class="wind-indicator" id="windIndicator">
+            <span class="wind-symbol" id="windArrow">→</span>
+            <span class="wind-copy">
+                <strong id="windDirection">WIND FROM LEFT</strong>
+                <small id="windStrength">BREEZE · 3.2 m/s</small>
+            </span>
+            <span class="wind-count" id="windTimer">3s</span>
+        </div>
+        <div class="target-label">DISTANCE · 30 METERS</div>
+        <canvas id="game" width="1000" height="620"></canvas>
+        <div class="message" id="message">
+            READY, ARCHER?
+            <small>START THE GAME TO ENTER THE RANGE</small>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="power">
+            <div class="power-head">
+                <span>BOW DRAW POWER</span>
+                <strong id="powerText">0%</strong>
+            </div>
+            <div class="power-track"><div class="power-fill" id="powerFill"></div></div>
+        </div>
+        <div class="actions">
+            <button class="btn secondary" id="resetBtn">↻ Reset</button>
+            <button class="btn primary" id="startBtn">Start Game →</button>
+        </div>
+    </div>
+
+    <div class="difficulty">
+        <span>HAND STABILITY</span>
+        <strong id="stabilityText">STABLE</strong>
+    </div>
+</section>
+
+<aside class="side-panel">
+    <div>
+        <h3 class="side-title">Personal Record</h3>
+        <div class="record">
+            <label>BEST SESSION SCORE</label>
+            <strong id="best">0</strong>
+            <small>Your highest scoring session</small>
+            <div class="progress" id="progress">
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <h3 class="side-title">Recent Shots</h3>
+        <div class="history" id="history">
+            <div class="empty">Your shooting history will appear here.</div>
+        </div>
+    </div>
+
+    <div class="tip">
+        <h4>ARCHER'S TIP</h4>
+        <p>Your hands are never perfectly still. Watch the reticle, anticipate its movement, and release when it passes over your intended point. Drawing the bow increases instability.</p>
+    </div>
+</aside>
+</main>
+
+<footer>ARCHERY ARENA · PRECISION IS EVERYTHING</footer>
+</div>
+
+<div class="overlay" id="overlay">
+    <div class="result">
+        <div class="result-icon">🏆</div>
+        <h2 id="resultTitle">Session Complete!</h2>
+        <p>Your performance at the range</p>
+        <div class="result-score" id="resultScore">0</div>
+        <div class="result-stats">
+            <div><small>ACCURACY</small><strong id="resultAccuracy">0%</strong></div>
+            <div><small>ARROWS SHOT</small><strong id="resultArrows">0</strong></div>
+        </div>
+        <button class="btn primary" id="again" style="width:100%">Play Again →</button>
+    </div>
+</div>
+
+<script>
+const canvas=document.getElementById('game');
+const ctx=canvas.getContext('2d');
+const W=1000,H=620;
+const $=id=>document.getElementById(id);
+
+const target={x:500,y:222,radius:104};
+const bow={x:500,y:565};
+
+let mode='practice';
+let running=false,started=false,drawing=false,flying=false,soundOn=true;
+let score=0,shots=0,hits=0,arrowsLeft=Infinity,timeLeft=60,best=Number(localStorage.getItem('arenaBest')||0);
+
+let aim={x:500,y:222};
+let rawAim={x:500,y:222};
+let drawPower=0;
+let arrow=null;
+let impactArrows=[];
+let particles=[];
+let history=[];
+let clock=null,animation=null,lastTime=0,elapsed=0,flash=0;
+
+let tremor={
+    x:0,y:0,
+    vx:0,vy:0,
+    targetX:0,targetY:0,
+    nextChange:0,
+    noiseX:0,noiseY:0
+};
+
+let breath=0;
+let releaseRecovery=0;
+
+// Wind changes on a timed cycle. The first three gusts are fixed;
+// every later gust is random and can never last longer than five seconds.
+const windDirections=[
+    {name:'LEFT',label:'WIND FROM LEFT',arrow:'→',x:1,y:0},
+    {name:'RIGHT',label:'WIND FROM RIGHT',arrow:'←',x:-1,y:0},
+    {name:'TOP',label:'WIND FROM TOP',arrow:'↓',x:0,y:1},
+    {name:'BOTTOM',label:'WIND FROM BOTTOM',arrow:'↑',x:0,y:-1},
+    {name:'TOP LEFT',label:'WIND FROM TOP LEFT',arrow:'↘',x:.707,y:.707},
+    {name:'TOP RIGHT',label:'WIND FROM TOP RIGHT',arrow:'↙',x:-.707,y:.707},
+    {name:'BOTTOM LEFT',label:'WIND FROM BOTTOM LEFT',arrow:'↗',x:.707,y:-.707},
+    {name:'BOTTOM RIGHT',label:'WIND FROM BOTTOM RIGHT',arrow:'↖',x:-.707,y:-.707}
+];
+let wind={index:0,x:1,y:0,strength:3.2,remaining:3,total:3,sequenceStep:0,shiftFlash:0};
+let windStreaks=Array.from({length:34},()=>({
+    x:Math.random()*W,y:Math.random()*H,
+    length:12+Math.random()*28,offset:Math.random()*Math.PI*2
+}));
+
+$('best').textContent=best;
+
+function playSound(freq,duration=.12,type='sine'){
+    if(!soundOn)return;
+    try{
+        const audio=new(window.AudioContext||window.webkitAudioContext)();
+        const osc=audio.createOscillator();
+        const gain=audio.createGain();
+        osc.type=type;
+        osc.frequency.value=freq;
+        gain.gain.setValueAtTime(.08,audio.currentTime);
+        gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);
+        osc.connect(gain);
+        gain.connect(audio.destination);
+        osc.start();
+        osc.stop(audio.currentTime+duration);
+        osc.onended=()=>audio.close();
+    }catch(e){}
+}
+
+// Smooth random hand tremor.
+// The cursor itself never moves; only the in-game reticle does.
+function updateTremor(dt){
+    breath+=dt*1.05;
+
+    tremor.nextChange-=dt;
+
+    if(tremor.nextChange<=0){
+        tremor.nextChange=.12+Math.random()*.2;
+        tremor.targetX=(Math.random()-.5)*2;
+        tremor.targetY=(Math.random()-.5)*2;
+    }
+
+    const power=drawing?drawPower/100:0;
+
+    // Base tremor is subtle. Drawing increases its amplitude.
+    const base= drawing ? 4+power*12 : 1.5;
+    const recovery=releaseRecovery>0?Math.max(.35,1-releaseRecovery*1.5):1;
+
+    const amplitude=base*recovery;
+
+    // Smoothly follow random targets instead of teleporting.
+    const smooth=1-Math.exp(-dt*5);
+
+    tremor.x+=(tremor.targetX*amplitude-tremor.x)*smooth;
+    tremor.y+=(tremor.targetY*amplitude-tremor.y)*smooth;
+
+    // Fine physiological-style oscillation.
+    const microX=Math.sin(elapsed*8.1)*.9+Math.sin(elapsed*17.3)*.35;
+    const microY=Math.cos(elapsed*7.2)*.85+Math.sin(elapsed*13.1)*.3;
+
+    // Slight breathing sway.
+    const breathingX=Math.sin(breath*.7)*.8;
+    const breathingY=Math.sin(breath)*1.2;
+
+    const rawX=rawAim.x+microX*amplitude*.25+breathingX*amplitude*.2;
+    const rawY=rawAim.y+microY*amplitude*.25+breathingY*amplitude*.2;
+
+    aim.x=rawX+tremor.x;
+    aim.y=rawY+tremor.y;
+
+    if(releaseRecovery>0)releaseRecovery=Math.max(0,releaseRecovery-dt);
+
+    $('stabilityText').textContent=
+        !drawing?'STABLE':
+        power>.7?'UNSTABLE':
+        power>.35?'SHAKY':'MODERATE';
+}
+
+function setWind(index,duration){
+    const d=windDirections[index];
+    wind.index=index;
+    wind.x=d.x;
+    wind.y=d.y;
+    wind.remaining=duration;
+    wind.total=duration;
+    wind.strength=2.2+Math.random()*4.2;
+    wind.shiftFlash=1.25;
+    $('windArrow').textContent=d.arrow;
+    $('windDirection').textContent=d.label;
+    $('windStrength').textContent=(wind.strength<3.5?'LIGHT BREEZE':wind.strength<5?'STEADY WIND':'STRONG GUST')+' · '+wind.strength.toFixed(1)+' m/s';
+    $('windIndicator').classList.add('shift');
+    playSound(330,.07,'sine');
+}
+
+function resetWind(){
+    wind.sequenceStep=0;
+    setWind(0,3);
+    updateWindHUD();
+}
+
+function updateWind(dt){
+    if(wind.shiftFlash>0){
+        wind.shiftFlash=Math.max(0,wind.shiftFlash-dt);
+        if(wind.shiftFlash===0)$('windIndicator').classList.remove('shift');
+    }
+    wind.remaining-=dt;
+    if(wind.remaining<=0){
+        if(wind.sequenceStep===0){
+            wind.sequenceStep=1;
+            setWind(1,5);
+        }else if(wind.sequenceStep===1){
+            wind.sequenceStep=2;
+            setWind(2,3);
+        }else{
+            let next;
+            do{next=Math.floor(Math.random()*windDirections.length)}
+            while(next===wind.index);
+            setWind(next,1+Math.random()*4);
+        }
+    }
+    updateWindHUD();
+}
+
+function updateWindHUD(){
+    $('windTimer').textContent=Math.max(0,Math.ceil(wind.remaining))+'s';
+}
+
+function drawWind(dt){
+    if(!running)return;
+    ctx.save();
+    ctx.lineCap='round';
+    const speed=38+wind.strength*13;
+    for(const streak of windStreaks){
+        streak.x+=wind.x*speed*dt;
+        streak.y+=wind.y*speed*dt;
+        const margin=45;
+        if(streak.x>W+margin)streak.x=-margin;
+        if(streak.x<-margin)streak.x=W+margin;
+        if(streak.y>H+margin)streak.y=-margin;
+        if(streak.y<-margin)streak.y=H+margin;
+        const perpX=-wind.y,perpY=wind.x;
+        const sway=Math.sin(elapsed*2+streak.offset)*4;
+        ctx.strokeStyle='rgba(226,239,213,.22)';
+        ctx.lineWidth=1.2;
+        ctx.beginPath();
+        ctx.moveTo(streak.x+perpX*sway,streak.y+perpY*sway);
+        ctx.lineTo(streak.x-wind.x*streak.length,streak.y-wind.y*streak.length);
+        ctx.stroke();
+    }
+    ctx.restore();
+}
+
+function background(){
+    const sky=ctx.createLinearGradient(0,0,0,H);
+    sky.addColorStop(0,'#172b27');
+    sky.addColorStop(.38,'#4d7051');
+    sky.addColorStop(.67,'#8c9b65');
+    sky.addColorStop(1,'#374c30');
+    ctx.fillStyle=sky;
+    ctx.fillRect(0,0,W,H);
+
+    ctx.fillStyle='#344e3d';
+    ctx.beginPath();
+    ctx.moveTo(0,310);
+    ctx.lineTo(110,210);
+    ctx.lineTo(230,295);
+    ctx.lineTo(380,185);
+    ctx.lineTo(530,310);
+    ctx.lineTo(700,190);
+    ctx.lineTo(850,290);
+    ctx.lineTo(1000,210);
+    ctx.lineTo(1000,420);
+    ctx.lineTo(0,420);
+    ctx.fill();
+
+    for(let i=0;i<45;i++){
+        let x=i*24,h=65+(i*37%90);
+        ctx.fillStyle=i%2?'#243e30':'#2b4834';
+        ctx.beginPath();
+        ctx.moveTo(x-25,420);
+        ctx.lineTo(x,420-h);
+        ctx.lineTo(x+27,420);
+        ctx.fill();
+    }
+
+    const ground=ctx.createLinearGradient(0,370,0,H);
+    ground.addColorStop(0,'#526d40');
+    ground.addColorStop(1,'#273c29');
+    ctx.fillStyle=ground;
+    ctx.fillRect(0,370,W,250);
+
+    ctx.fillStyle='#66784b';
+    ctx.beginPath();
+    ctx.moveTo(390,375);
+    ctx.lineTo(610,375);
+    ctx.lineTo(900,620);
+    ctx.lineTo(100,620);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle='rgba(229,226,177,.22)';
+    ctx.lineWidth=2;
+
+    for(let i=0;i<5;i++){
+        const y=390+i*48,half=110+i*40;
+        ctx.beginPath();
+        ctx.moveTo(500-half,y);
+        ctx.lineTo(500+half,y);
+        ctx.stroke();
+    }
+
+    for(let i=0;i<100;i++){
+        const x=(i*83)%W,y=390+(i*47%225);
+        ctx.strokeStyle=i%2?'#8c9c58':'#71884b';
+        ctx.beginPath();
+        ctx.moveTo(x,y);
+        ctx.lineTo(x-3,y-7);
+        ctx.stroke();
+    }
+
+    const glow=ctx.createRadialGradient(500,170,5,500,170,350);
+    glow.addColorStop(0,'rgba(255,229,159,.16)');
+    glow.addColorStop(1,'rgba(255,229,159,0)');
+    ctx.fillStyle=glow;
+    ctx.fillRect(0,0,W,H);
+}
+
+function drawTarget(){
+    const x=target.x,y=target.y;
+
+    ctx.fillStyle='rgba(0,0,0,.3)';
+    ctx.beginPath();
+    ctx.ellipse(x+8,y+130,90,14,0,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle='#63472c';
+    ctx.fillRect(x-6,y+85,12,155);
+    ctx.fillRect(x-45,y+230,90,9);
+
+    ctx.fillStyle='#b58a55';
+    ctx.beginPath();
+    ctx.arc(x,y,target.radius+9,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle='#dfc08d';
+    ctx.lineWidth=5;
+    ctx.stroke();
+
+    const rings=[
+        [104,'#eee9d9'],[84,'#ce4945'],[65,'#eee9d9'],
+        [46,'#ce4945'],[26,'#e5bd4e'],[11,'#f9e9a3']
+    ];
+
+    rings.forEach(([r,color])=>{
+        ctx.beginPath();
+        ctx.arc(x,y,r,0,Math.PI*2);
+        ctx.fillStyle=color;
+        ctx.fill();
+        ctx.strokeStyle='rgba(40,35,25,.22)';
+        ctx.lineWidth=1;
+        ctx.stroke();
+    });
+
+    ctx.fillStyle='rgba(255,255,255,.3)';
+    ctx.beginPath();
+    ctx.arc(x-4,y-5,3,0,Math.PI*2);
+    ctx.fill();
+
+    impactArrows.forEach(a=>{
+        ctx.save();
+        ctx.translate(a.x,a.y);
+        ctx.rotate(a.angle);
+        ctx.strokeStyle='#493d2d';
+        ctx.lineWidth=3;
+        ctx.beginPath();
+        ctx.moveTo(-12,0);
+        ctx.lineTo(12,0);
+        ctx.stroke();
+        ctx.restore();
+    });
+}
+
+function drawBow(){
+    ctx.save();
+    ctx.translate(bow.x,bow.y);
+
+    const gradient=ctx.createLinearGradient(-100,-120,100,100);
+    gradient.addColorStop(0,'#d5a56a');
+    gradient.addColorStop(.5,'#80502d');
+    gradient.addColorStop(1,'#e1bc80');
+
+    ctx.strokeStyle=gradient;
+    ctx.lineWidth=15;
+    ctx.lineCap='round';
+
+    ctx.beginPath();
+    ctx.moveTo(-38,100);
+    ctx.bezierCurveTo(-145,-10,-110,-170,0,-205);
+    ctx.bezierCurveTo(110,-170,145,-10,38,100);
+    ctx.stroke();
+
+    ctx.strokeStyle='#edc68d';
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.moveTo(-34,95);
+    ctx.bezierCurveTo(-126,-5,-95,-145,0,-195);
+    ctx.bezierCurveTo(95,-145,126,-5,34,95);
+    ctx.stroke();
+
+    ctx.fillStyle='#523721';
+    ctx.beginPath();
+    ctx.roundRect(-13,-40,26,90,8);
+    ctx.fill();
+
+    const pull=drawing?Math.min(drawPower/100,1)*45:0;
+
+    ctx.strokeStyle='#e4dcc3';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(0,-202);
+    ctx.lineTo(-pull,-55);
+    ctx.lineTo(0,103);
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+function drawArrowShape(x,y,angle,scale=1){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(angle);
+    ctx.scale(scale,scale);
+
+    ctx.strokeStyle='#d9c7a0';
+    ctx.lineWidth=4;
+    ctx.beginPath();
+    ctx.moveTo(-75,0);
+    ctx.lineTo(25,0);
+    ctx.stroke();
+
+    ctx.fillStyle='#d6d8d0';
+    ctx.beginPath();
+    ctx.moveTo(40,0);
+    ctx.lineTo(22,-7);
+    ctx.lineTo(27,0);
+    ctx.lineTo(22,7);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle='#bf5b45';
+    ctx.beginPath();
+    ctx.moveTo(-65,0);
+    ctx.lineTo(-83,-12);
+    ctx.lineTo(-53,-4);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(-65,0);
+    ctx.lineTo(-83,12);
+    ctx.lineTo(-53,4);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+}
+
+function drawCrosshair(){
+    if(!running||flying)return;
+
+    ctx.save();
+
+    // Slightly dimmer reticle when tremor is high.
+    const intensity=drawing?Math.max(.45,1-drawPower/200):.9;
+    ctx.strokeStyle=`rgba(245,240,213,${intensity})`;
+    ctx.lineWidth=1.5;
+
+    ctx.beginPath();
+    ctx.arc(aim.x,aim.y,13,0,Math.PI*2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(aim.x-24,aim.y);
+    ctx.lineTo(aim.x-7,aim.y);
+    ctx.moveTo(aim.x+7,aim.y);
+    ctx.lineTo(aim.x+24,aim.y);
+    ctx.moveTo(aim.x,aim.y-24);
+    ctx.lineTo(aim.x,aim.y-7);
+    ctx.moveTo(aim.x,aim.y+7);
+    ctx.lineTo(aim.x,aim.y+24);
+    ctx.stroke();
+
+    ctx.fillStyle='#e9c078';
+    ctx.beginPath();
+    ctx.arc(aim.x,aim.y,2.5,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.restore();
+}
+
+function createParticles(x,y,color='#e9c078'){
+    for(let i=0;i<25;i++){
+        const angle=Math.random()*Math.PI*2;
+        const speed=35+Math.random()*110;
+
+        particles.push({
+            x,y,vx:Math.cos(angle)*speed,
+            vy:Math.sin(angle)*speed,
+            life:.35+Math.random()*.4,color,
+            size:1+Math.random()*3
+        });
+    }
+}
+
+function drawParticles(dt){
+    for(let i=particles.length-1;i>=0;i--){
+        const p=particles[i];
+        p.x+=p.vx*dt;
+        p.y+=p.vy*dt;
+        p.life-=dt;
+
+        ctx.globalAlpha=Math.max(0,p.life/.7);
+        ctx.fillStyle=p.color;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+        ctx.fill();
+
+        if(p.life<=0)particles.splice(i,1);
+    }
+    ctx.globalAlpha=1;
+}
+
+function drawFlyingArrow(){
+    if(!flying||!arrow)return;
+
+    const t=arrow.progress;
+    const x=arrow.startX+(arrow.endX-arrow.startX)*t;
+    const y=arrow.startY+(arrow.endY-arrow.startY)*t;
+    const arc=Math.sin(t*Math.PI)*-95;
+    const scale=1-t*.76;
+    const angle=Math.atan2(arrow.endY-arrow.startY,arrow.endX-arrow.startX);
+
+    drawArrowShape(x,y+arc,angle,scale);
+}
+
+function render(dt=0){
+    ctx.clearRect(0,0,W,H);
+    background();
+    drawWind(dt);
+    drawTarget();
+    drawBow();
+
+    if(running&&!flying&&drawing){
+        const angle=Math.atan2(aim.y-bow.y,aim.x-bow.x);
+        drawArrowShape(bow.x+Math.cos(angle)*70,bow.y+Math.sin(angle)*70,angle,.9);
+    }
+
+    drawFlyingArrow();
+    drawCrosshair();
+    drawParticles(dt);
+
+    if(flash>0){
+        ctx.fillStyle=`rgba(255,240,190,${flash})`;
+        ctx.fillRect(0,0,W,H);
+        flash=Math.max(0,flash-dt*1.8);
+    }
+
+    if(drawing){
+        ctx.fillStyle='rgba(10,20,12,.7)';
+        ctx.fillRect(420,35,160,30);
+        ctx.fillStyle='#e9c078';
+        ctx.font='bold 12px Arial';
+        ctx.textAlign='center';
+        ctx.fillText('BOW DRAWING',500,55);
+        ctx.textAlign='left';
+    }
+}
+
+function getPoints(x,y){
+    const d=Math.hypot(x-target.x,y-target.y);
+
+    if(d<=11)return{points:10,label:'BULLSEYE'};
+    if(d<=26)return{points:9,label:'GOLD'};
+    if(d<=46)return{points:7,label:'INNER RED'};
+    if(d<=65)return{points:5,label:'INNER WHITE'};
+    if(d<=84)return{points:3,label:'OUTER RED'};
+    if(d<=target.radius)return{points:1,label:'OUTER RING'};
+    return{points:0,label:'MISS'};
+}
+
+function updateHUD(){
+    $('score').textContent=score;
+    $('arrows').textContent=arrowsLeft===Infinity?'∞':arrowsLeft;
+    $('accuracy').innerHTML=(shots?Math.round(hits/shots*100):0)+'<small>%</small>';
+    $('timer').textContent=mode==='challenge'?timeLeft+'s':'--';
+    $('best').textContent=best;
+
+    $('progress').querySelectorAll('span').forEach((el,i)=>{
+        el.classList.toggle('done',i<shots);
+    });
+}
+
+function addHistory(points,label){
+    history.unshift({points,label});
+    history=history.slice(0,6);
+
+    $('history').innerHTML=history.map((item,i)=>`
+        <div class="history-row">
+            <span>Shot ${shots-i} · ${item.label}</span>
+            <strong>+${item.points}</strong>
+        </div>
+    `).join('');
+}
+
+function shoot(){
+    if(!running||flying||!drawing)return;
+
+    drawing=false;
+
+    if(drawPower<5){
+        drawPower=0;
+        $('powerFill').style.width='0%';
+        $('powerText').textContent='0%';
+        return;
+    }
+
+    shots++;
+    if(arrowsLeft!==Infinity)arrowsLeft--;
+
+    // Capture the unstable reticle position at release.
+    const shotX=aim.x;
+    const shotY=aim.y;
+
+    const dx=shotX-target.x;
+    const dy=shotY-target.y;
+
+    arrow={
+        startX:bow.x,
+        startY:bow.y-90,
+        // Wind pushes the arrow during flight. Stronger gusts create more drift.
+        endX:target.x+dx+wind.x*wind.strength*5.2,
+        endY:target.y+dy+wind.y*wind.strength*5.2,
+        progress:0,
+        duration:Math.max(.3,.85-(drawPower/100)*.2),
+        impactX:target.x+dx,
+        impactY:target.y+dy,
+        result:getPoints(target.x+dx,target.y+dy)
+    };
+
+    flying=true;
+    releaseRecovery=.65;
+
+    playSound(180,.2,'triangle');
+
+    $('powerFill').style.width='0%';
+    $('powerText').textContent='0%';
+    $('message').style.display='none';
+
+    updateHUD();
+}
+
+function impact(){
+    const result=arrow.result;
+    score+=result.points;
+
+    if(result.points>0){
+        hits++;
+        createParticles(arrow.impactX,arrow.impactY);
+
+        impactArrows.push({
+            x:arrow.impactX,y:arrow.impactY,
+            angle:Math.atan2(arrow.impactY-bow.y,arrow.impactX-bow.x)
+        });
+
+        impactArrows=impactArrows.slice(-15);
+        playSound(result.points===10?950:550,.2);
+        flash=result.points===10?.16:.05;
+    }else{
+        playSound(130,.2,'sawtooth');
+    }
+
+    addHistory(result.points,result.label);
+
+    flying=false;
+    arrow=null;
+    drawPower=0;
+
+    updateHUD();
+
+    $('message').innerHTML=result.points===10?'PERFECT BULLSEYE!':
+        result.points>0?result.label+' +'+result.points:'MISSED!';
+
+    $('message').style.display='block';
+
+    if(mode==='competition'&&arrowsLeft===0)setTimeout(endGame,900);
+}
+
+function update(dt){
+    updateTremor(dt);
+    updateWind(dt);
+
+    if(flying&&arrow){
+        arrow.progress+=dt/arrow.duration;
+        if(arrow.progress>=1){
+            arrow.progress=1;
+            impact();
+        }
+    }
+
+    if(drawing){
+        drawPower=Math.min(100,drawPower+dt*55);
+        $('powerText').textContent=Math.round(drawPower)+'%';
+        $('powerFill').style.width=drawPower+'%';
+    }
+
+    drawParticles(dt);
+}
+
+function loop(timestamp){
+    const dt=Math.min((timestamp-lastTime)/1000||0,.04);
+    lastTime=timestamp;
+
+    if(running){
+        elapsed+=dt;
+        update(dt);
+    }
+
+    render(dt);
+
+    if(running||particles.length||flash>0){
+        animation=requestAnimationFrame(loop);
+    }else{
+        animation=null;
+    }
+}
+
+function ensureLoop(){
+    if(!animation){
+        lastTime=performance.now();
+        animation=requestAnimationFrame(loop);
+    }
+}
+
+function startGame(){
+    clearInterval(clock);
+    cancelAnimationFrame(animation);
+    animation=null;
+
+    mode=$('mode').value;
+    score=0;shots=0;hits=0;
+    history=[];impactArrows=[];particles=[];
+    arrow=null;flying=false;drawing=false;
+    drawPower=0;elapsed=0;timeLeft=60;
+    arrowsLeft=mode==='competition'?10:Infinity;
+    started=true;running=true;
+    aim={x:500,y:222};
+    rawAim={x:500,y:222};
+    tremor={x:0,y:0,vx:0,vy:0,targetX:0,targetY:0,nextChange:0,noiseX:0,noiseY:0};
+    releaseRecovery=0;
+    resetWind();
+
+    $('history').innerHTML='<div class="empty">Your shooting history will appear here.</div>';
+    $('message').style.display='none';
+    $('startBtn').textContent='Restart Game ↻';
+    $('mode').disabled=true;
+
+    $('powerFill').style.width='0%';
+    $('powerText').textContent='0%';
+
+    updateHUD();
+    ensureLoop();
+
+    if(mode==='challenge'){
+        clock=setInterval(()=>{
+            if(!running)return;
+            timeLeft--;
+            updateHUD();
+            if(timeLeft<=0)endGame();
+        },1000);
+    }
+}
+
+function endGame(){
+    if(!running)return;
+
+    running=false;
+    drawing=false;
+    flying=false;
+    clearInterval(clock);
+
+    const accuracy=shots?Math.round(hits/shots*100):0;
+
+    if(score>best){
+        best=score;
+        localStorage.setItem('arenaBest',best);
+    }
+
+    $('resultTitle').textContent=score>=70?'Outstanding Archer!':'Session Complete!';
+    $('resultScore').textContent=score;
+    $('resultAccuracy').textContent=accuracy+'%';
+    $('resultArrows').textContent=shots;
+    $('overlay').classList.add('show');
+    $('startBtn').textContent='Start Game →';
+    $('mode').disabled=false;
+
+    updateHUD();
+}
+
+function resetGame(){
+    clearInterval(clock);
+    cancelAnimationFrame(animation);
+    animation=null;
+
+    running=false;started=false;drawing=false;flying=false;
+    score=0;shots=0;hits=0;arrowsLeft=Infinity;timeLeft=60;
+    drawPower=0;history=[];particles=[];impactArrows=[];
+    arrow=null;flash=0;elapsed=0;releaseRecovery=0;
+    windStreaks=Array.from({length:34},()=>({x:Math.random()*W,y:Math.random()*H,length:12+Math.random()*28,offset:Math.random()*Math.PI*2}));
+    resetWind();
+
+    aim={x:500,y:222};
+    rawAim={x:500,y:222};
+    tremor={x:0,y:0,vx:0,vy:0,targetX:0,targetY:0,nextChange:0,noiseX:0,noiseY:0};
+
+    $('history').innerHTML='<div class="empty">Your shooting history will appear here.</div>';
+    $('overlay').classList.remove('show');
+    $('mode').disabled=false;
+    $('startBtn').textContent='Start Game →';
+    $('message').style.display='block';
+    $('message').innerHTML='READY, ARCHER?<small>START THE GAME TO ENTER THE RANGE</small>';
+    $('powerFill').style.width='0%';
+    $('powerText').textContent='0%';
+
+    updateHUD();
+    render();
+}
+
+function position(e){
+    const rect=canvas.getBoundingClientRect();
+    return{
+        x:(e.clientX-rect.left)*W/rect.width,
+        y:(e.clientY-rect.top)*H/rect.height
+    };
+}
+
+function updateAim(p){
+    rawAim.x=Math.max(220,Math.min(780,p.x));
+    rawAim.y=Math.max(70,Math.min(410,p.y));
+}
+
+canvas.addEventListener('pointermove',e=>{
+    if(!running||flying)return;
+    updateAim(position(e));
+    ensureLoop();
+});
+
+canvas.addEventListener('pointerdown',e=>{
+    if(!running||flying)return;
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    updateAim(position(e));
+    drawing=true;
+    drawPower=0;
+    $('message').style.display='none';
+    ensureLoop();
+});
+
+canvas.addEventListener('pointerup',()=>{
+    if(drawing)shoot();
+});
+
+canvas.addEventListener('pointercancel',()=>{
+    drawing=false;
+    drawPower=0;
+    $('powerFill').style.width='0%';
+    $('powerText').textContent='0%';
+});
+
+$('startBtn').addEventListener('click',startGame);
+$('resetBtn').addEventListener('click',resetGame);
+$('mode').addEventListener('change',resetGame);
+
+$('again').addEventListener('click',()=>{
+    $('overlay').classList.remove('show');
+    startGame();
+});
+
+$('soundBtn').addEventListener('click',()=>{
+    soundOn=!soundOn;
+    $('soundBtn').textContent=soundOn?'♫':'♪';
+    $('soundBtn').style.color=soundOn?'var(--green)':'var(--muted)';
+});
+
+updateHUD();
+resetWind();
+render();
+</script>
+</body>
+</html>
