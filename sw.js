@@ -6,7 +6,7 @@ self.addEventListener('install', event => {
       return cache.addAll([
         './',
         './index.html',
-        './archerymaster/archerymaster.html',
+        './archeryarena/archeryarena.html',
         './birdshootinggame/birdshootinggame.html',
         './bitlife/bitlife.html',
         './boardshooter/boardshooter.html',
