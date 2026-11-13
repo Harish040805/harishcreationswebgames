@@ -243,11 +243,11 @@
             let brownGrad = ctx.createLinearGradient(rx, ry, rx + rectWidth, ry + rectHeight);
             brownGrad.addColorStop(0, '#5d2e0d');
             brownGrad.addColorStop(0.5, '#986458');
-            brownGrad.addColorStop(1, '#5d2e0d');
+            brownGrad.addColorStop(1, '#986458');
             let ovalGrad = ctx.createLinearGradient(hx, yPos - 35, hx, yPos + 35);
             ovalGrad.addColorStop(0, '#5d2e0d');
             ovalGrad.addColorStop(0.5, '#986458');
-            ovalGrad.addColorStop(1, '#5d2e0d');
+            ovalGrad.addColorStop(1, '#986458');
             ctx.fillStyle = ovalGrad;
             ctx.beginPath();
             ctx.ellipse(rx + (rectWidth / 2) - 20, yPos, 35, 35, 0, 0, Math.PI * 2);
