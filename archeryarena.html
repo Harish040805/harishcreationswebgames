@@ -172,10 +172,7 @@ footer{text-align:center;padding:20px;color:#718078;font-size:10px;letter-spacin
 .result-stats div{padding:13px;background:#ffffff08;border-radius:10px}
 .result-stats small{display:block;font-size:9px;color:var(--muted);margin-bottom:6px}
 .result-stats strong{font-size:17px}
-.difficulty{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:0 19px 14px;font-size:10px;color:var(--muted)
-}
+.difficulty{display:flex;justify-content:space-between;align-items:center;padding:0 19px 14px;font-size:10px;color:var(--muted)}
 .difficulty strong{color:var(--gold)}
 @media(max-width:950px){
     .layout{grid-template-columns:1fr}
@@ -203,10 +200,8 @@ footer{text-align:center;padding:20px;color:#718078;font-size:10px;letter-spacin
 }
 </style>
 </head>
-
 <body>
 <div class="app">
-
 <header>
     <div class="brand">
         <div class="logo">⌖</div>
@@ -220,10 +215,8 @@ footer{text-align:center;padding:20px;color:#718078;font-size:10px;letter-spacin
         <button class="sound" id="soundBtn">♫</button>
     </div>
 </header>
-
 <main class="layout">
 <section class="game-panel">
-
     <div class="game-header">
         <div>
             <h2>Precision Shooting Range</h2>
@@ -235,14 +228,12 @@ footer{text-align:center;padding:20px;color:#718078;font-size:10px;letter-spacin
             <option value="competition">Competition · 10 Arrows</option>
         </select>
     </div>
-
     <div class="hud">
         <div class="hud-item"><label>TOTAL SCORE</label><div id="score">0</div></div>
         <div class="hud-item"><label>ARROWS LEFT</label><div id="arrows">∞</div></div>
         <div class="hud-item"><label>ACCURACY</label><div id="accuracy">0<small>%</small></div></div>
         <div class="hud-item"><label>TIME LEFT</label><div id="timer">--</div></div>
     </div>
-
     <div class="game-area">
         <div class="scene-label">ARCHERY ARENA / RANGE 01</div>
         <div class="wind-indicator" id="windIndicator">
@@ -260,7 +251,6 @@ footer{text-align:center;padding:20px;color:#718078;font-size:10px;letter-spacin
             <small>START THE GAME TO ENTER THE RANGE</small>
         </div>
     </div>
-
     <div class="controls">
         <div class="power">
             <div class="power-head">
@@ -274,13 +264,11 @@ footer{text-align:center;padding:20px;color:#718078;font-size:10px;letter-spacin
             <button class="btn primary" id="startBtn">Start Game →</button>
         </div>
     </div>
-
     <div class="difficulty">
         <span>HAND STABILITY</span>
         <strong id="stabilityText">STABLE</strong>
     </div>
 </section>
-
 <aside class="side-panel">
     <div>
         <h3 class="side-title">Personal Record</h3>
@@ -294,24 +282,20 @@ footer{text-align:center;padding:20px;color:#718078;font-size:10px;letter-spacin
             </div>
         </div>
     </div>
-
     <div>
         <h3 class="side-title">Recent Shots</h3>
         <div class="history" id="history">
             <div class="empty">Your shooting history will appear here.</div>
         </div>
     </div>
-
     <div class="tip">
         <h4>ARCHER'S TIP</h4>
         <p>Your hands are never perfectly still. Watch the reticle, anticipate its movement, and release when it passes over your intended point. Drawing the bow increases instability.</p>
     </div>
 </aside>
 </main>
-
 <footer>ARCHERY ARENA · PRECISION IS EVERYTHING</footer>
 </div>
-
 <div class="overlay" id="overlay">
     <div class="result">
         <div class="result-icon">🏆</div>
@@ -325,20 +309,16 @@ footer{text-align:center;padding:20px;color:#718078;font-size:10px;letter-spacin
         <button class="btn primary" id="again" style="width:100%">Play Again →</button>
     </div>
 </div>
-
 <script>
 const canvas=document.getElementById('game');
 const ctx=canvas.getContext('2d');
 const W=1000,H=620;
 const $=id=>document.getElementById(id);
-
 const target={x:500,y:222,radius:104};
 const bow={x:500,y:565};
-
 let mode='practice';
 let running=false,started=false,drawing=false,flying=false,soundOn=true;
 let score=0,shots=0,hits=0,arrowsLeft=Infinity,timeLeft=60,best=Number(localStorage.getItem('arenaBest')||0);
-
 let aim={x:500,y:222};
 let rawAim={x:500,y:222};
 let drawPower=0;
@@ -347,7 +327,6 @@ let impactArrows=[];
 let particles=[];
 let history=[];
 let clock=null,animation=null,lastTime=0,elapsed=0,flash=0;
-
 let tremor={
     x:0,y:0,
     vx:0,vy:0,
@@ -355,11 +334,9 @@ let tremor={
     nextChange:0,
     noiseX:0,noiseY:0
 };
-
 let breath=0;
 let releaseRecovery=0;
-let holdTime=0;
-    
+let holdTime=0;  
 const windDirections=[
     {name:'LEFT',label:'WIND FROM LEFT',arrow:'→',x:1,y:0},
     {name:'RIGHT',label:'WIND FROM RIGHT',arrow:'←',x:-1,y:0},
@@ -375,9 +352,7 @@ let windStreaks=Array.from({length:34},()=>({
     x:Math.random()*W,y:Math.random()*H,
     length:12+Math.random()*28,offset:Math.random()*Math.PI*2
 }));
-
 $('best').textContent=best;
-
 function playSound(freq,duration=.12,type='sine'){
     if(!soundOn)return;
     try{
@@ -395,7 +370,6 @@ function playSound(freq,duration=.12,type='sine'){
         osc.onended=()=>audio.close();
     }catch(e){}
 }
-
 function updateTremor(dt){
     breath+=dt*1.05;
     tremor.nextChange-=dt;
@@ -404,34 +378,27 @@ function updateTremor(dt){
         tremor.targetX=(Math.random()-.5)*2;
         tremor.targetY=(Math.random()-.5)*2;
     }
-
     const power=drawing?drawPower/100:0;
-    const base= drawing ? 4+power*12 : 1.5;
+    const base = drawing ? (7+power*18)*(1+Math.max(0,holdTime-2)*.35) : 3;
     const recovery=releaseRecovery>0?Math.max(.35,1-releaseRecovery*1.5):1;
     const amplitude=base*recovery;
     const smooth=1-Math.exp(-dt*5);
-
     tremor.x+=(tremor.targetX*amplitude-tremor.x)*smooth;
     tremor.y+=(tremor.targetY*amplitude-tremor.y)*smooth;
-
     const microX=Math.sin(elapsed*8.1)*.9+Math.sin(elapsed*17.3)*.35;
     const microY=Math.cos(elapsed*7.2)*.85+Math.sin(elapsed*13.1)*.3;
     const breathingX=Math.sin(breath*.7)*.8;
     const breathingY=Math.sin(breath)*1.2;
     const rawX=rawAim.x+microX*amplitude*.25+breathingX*amplitude*.2;
     const rawY=rawAim.y+microY*amplitude*.25+breathingY*amplitude*.2;
-
     aim.x=rawX+tremor.x;
     aim.y=rawY+tremor.y;
-
     if(releaseRecovery>0)releaseRecovery=Math.max(0,releaseRecovery-dt);
-
     $('stabilityText').textContent=
         !drawing?'STABLE':
         power>.7?'UNSTABLE':
         power>.35?'SHAKY':'MODERATE';
 }
-
 function setWind(index,duration){
     const d=windDirections[index];
     wind.index=index;
@@ -447,13 +414,11 @@ function setWind(index,duration){
     $('windIndicator').classList.add('shift');
     playSound(330,.07,'sine');
 }
-
 function resetWind(){
     wind.sequenceStep=0;
     setWind(0,3);
     updateWindHUD();
 }
-
 function updateWind(dt){
     if(wind.shiftFlash>0){
         wind.shiftFlash=Math.max(0,wind.shiftFlash-dt);
@@ -476,11 +441,9 @@ function updateWind(dt){
     }
     updateWindHUD();
 }
-
 function updateWindHUD(){
     $('windTimer').textContent=Math.max(0,Math.ceil(wind.remaining))+'s';
 }
-
 function drawWind(dt){
     if(!running)return;
     ctx.save();
@@ -505,7 +468,6 @@ function drawWind(dt){
     }
     ctx.restore();
 }
-
 function background(){
     const sky=ctx.createLinearGradient(0,0,0,H);
     sky.addColorStop(0,'#172b27');
@@ -527,7 +489,6 @@ function background(){
     ctx.lineTo(1000,420);
     ctx.lineTo(0,420);
     ctx.fill();
-
     for(let i=0;i<45;i++){
         let x=i*24,h=65+(i*37%90);
         ctx.fillStyle=i%2?'#243e30':'#2b4834';
@@ -537,7 +498,6 @@ function background(){
         ctx.lineTo(x+27,420);
         ctx.fill();
     }
-
     const ground=ctx.createLinearGradient(0,370,0,H);
     ground.addColorStop(0,'#526d40');
     ground.addColorStop(1,'#273c29');
@@ -553,7 +513,6 @@ function background(){
     ctx.fill();
     ctx.strokeStyle='rgba(229,226,177,.22)';
     ctx.lineWidth=2;
-
     for(let i=0;i<5;i++){
         const y=390+i*48,half=110+i*40;
         ctx.beginPath();
@@ -561,7 +520,6 @@ function background(){
         ctx.lineTo(500+half,y);
         ctx.stroke();
     }
-
     for(let i=0;i<100;i++){
         const x=(i*83)%W,y=390+(i*47%225);
         ctx.strokeStyle=i%2?'#8c9c58':'#71884b';
@@ -570,14 +528,12 @@ function background(){
         ctx.lineTo(x-3,y-7);
         ctx.stroke();
     }
-
     const glow=ctx.createRadialGradient(500,170,5,500,170,350);
     glow.addColorStop(0,'rgba(255,229,159,.16)');
     glow.addColorStop(1,'rgba(255,229,159,0)');
     ctx.fillStyle=glow;
     ctx.fillRect(0,0,W,H);
 }
-
 function drawTarget(){
     const x=target.x,y=target.y;
     ctx.fillStyle='rgba(0,0,0,.3)';
@@ -594,12 +550,10 @@ function drawTarget(){
     ctx.strokeStyle='#dfc08d';
     ctx.lineWidth=5;
     ctx.stroke();
-
     const rings=[
         [104,'#eee9d9'],[84,'#ce4945'],[65,'#eee9d9'],
         [46,'#ce4945'],[26,'#e5bd4e'],[11,'#f9e9a3']
     ];
-
     rings.forEach(([r,color])=>{
         ctx.beginPath();
         ctx.arc(x,y,r,0,Math.PI*2);
@@ -609,12 +563,10 @@ function drawTarget(){
         ctx.lineWidth=1;
         ctx.stroke();
     });
-
     ctx.fillStyle='rgba(255,255,255,.3)';
     ctx.beginPath();
     ctx.arc(x-4,y-5,3,0,Math.PI*2);
     ctx.fill();
-
     impactArrows.forEach(a=>{
         ctx.save();
         ctx.translate(a.x,a.y);
@@ -628,7 +580,6 @@ function drawTarget(){
         ctx.restore();
     });
 }
-
 function drawBow(){
     ctx.save();
     ctx.translate(bow.x,bow.y);
@@ -655,9 +606,7 @@ function drawBow(){
     ctx.beginPath();
     ctx.roundRect(-13,-40,26,90,8);
     ctx.fill();
-
     const pull=drawing?Math.min(drawPower/100,1)*45:0;
-
     ctx.strokeStyle='#e4dcc3';
     ctx.lineWidth=2;
     ctx.beginPath();
@@ -665,23 +614,19 @@ function drawBow(){
     ctx.lineTo(-pull,-55);
     ctx.lineTo(0,103);
     ctx.stroke();
-
     ctx.restore();
 }
-
 function drawArrowShape(x,y,angle,scale=1){
     ctx.save();
     ctx.translate(x,y);
     ctx.rotate(angle);
     ctx.scale(scale,scale);
-
     ctx.strokeStyle='#d9c7a0';
     ctx.lineWidth=4;
     ctx.beginPath();
     ctx.moveTo(-75,0);
     ctx.lineTo(25,0);
     ctx.stroke();
-
     ctx.fillStyle='#d6d8d0';
     ctx.beginPath();
     ctx.moveTo(40,0);
@@ -690,7 +635,6 @@ function drawArrowShape(x,y,angle,scale=1){
     ctx.lineTo(22,7);
     ctx.closePath();
     ctx.fill();
-
     ctx.fillStyle='#bf5b45';
     ctx.beginPath();
     ctx.moveTo(-65,0);
@@ -698,31 +642,23 @@ function drawArrowShape(x,y,angle,scale=1){
     ctx.lineTo(-53,-4);
     ctx.closePath();
     ctx.fill();
-
     ctx.beginPath();
     ctx.moveTo(-65,0);
     ctx.lineTo(-83,12);
     ctx.lineTo(-53,4);
     ctx.closePath();
     ctx.fill();
-
     ctx.restore();
 }
-
 function drawCrosshair(){
     if(!running||flying)return;
-
     ctx.save();
-
-    // Slightly dimmer reticle when tremor is high.
     const intensity=drawing?Math.max(.45,1-drawPower/200):.9;
     ctx.strokeStyle=`rgba(245,240,213,${intensity})`;
     ctx.lineWidth=1.5;
-
     ctx.beginPath();
     ctx.arc(aim.x,aim.y,13,0,Math.PI*2);
     ctx.stroke();
-
     ctx.beginPath();
     ctx.moveTo(aim.x-24,aim.y);
     ctx.lineTo(aim.x-7,aim.y);
@@ -733,20 +669,16 @@ function drawCrosshair(){
     ctx.moveTo(aim.x,aim.y+7);
     ctx.lineTo(aim.x,aim.y+24);
     ctx.stroke();
-
     ctx.fillStyle='#e9c078';
     ctx.beginPath();
     ctx.arc(aim.x,aim.y,2.5,0,Math.PI*2);
     ctx.fill();
-
     ctx.restore();
 }
-
 function createParticles(x,y,color='#e9c078'){
     for(let i=0;i<25;i++){
         const angle=Math.random()*Math.PI*2;
         const speed=35+Math.random()*110;
-
         particles.push({
             x,y,vx:Math.cos(angle)*speed,
             vy:Math.sin(angle)*speed,
@@ -755,60 +687,49 @@ function createParticles(x,y,color='#e9c078'){
         });
     }
 }
-
 function drawParticles(dt){
     for(let i=particles.length-1;i>=0;i--){
         const p=particles[i];
         p.x+=p.vx*dt;
         p.y+=p.vy*dt;
         p.life-=dt;
-
         ctx.globalAlpha=Math.max(0,p.life/.7);
         ctx.fillStyle=p.color;
         ctx.beginPath();
         ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
         ctx.fill();
-
         if(p.life<=0)particles.splice(i,1);
     }
     ctx.globalAlpha=1;
 }
-
 function drawFlyingArrow(){
     if(!flying||!arrow)return;
-
     const t=arrow.progress;
     const x=arrow.startX+(arrow.endX-arrow.startX)*t;
     const y=arrow.startY+(arrow.endY-arrow.startY)*t;
     const arc=Math.sin(t*Math.PI)*-95;
     const scale=1-t*.76;
     const angle=Math.atan2(arrow.endY-arrow.startY,arrow.endX-arrow.startX);
-
     drawArrowShape(x,y+arc,angle,scale);
 }
-
 function render(dt=0){
     ctx.clearRect(0,0,W,H);
     background();
     drawWind(dt);
     drawTarget();
     drawBow();
-
     if(running&&!flying&&drawing){
         const angle=Math.atan2(aim.y-bow.y,aim.x-bow.x);
         drawArrowShape(bow.x+Math.cos(angle)*70,bow.y+Math.sin(angle)*70,angle,.9);
     }
-
     drawFlyingArrow();
     drawCrosshair();
     drawParticles(dt);
-
     if(flash>0){
         ctx.fillStyle=`rgba(255,240,190,${flash})`;
         ctx.fillRect(0,0,W,H);
         flash=Math.max(0,flash-dt*1.8);
     }
-
     if(drawing){
         ctx.fillStyle='rgba(10,20,12,.7)';
         ctx.fillRect(420,35,160,30);
@@ -819,10 +740,8 @@ function render(dt=0){
         ctx.textAlign='left';
     }
 }
-
 function getPoints(x,y){
     const d=Math.hypot(x-target.x,y-target.y);
-
     if(d<=11)return{points:10,label:'BULLSEYE'};
     if(d<=26)return{points:9,label:'GOLD'};
     if(d<=46)return{points:7,label:'INNER RED'};
@@ -831,23 +750,19 @@ function getPoints(x,y){
     if(d<=target.radius)return{points:1,label:'OUTER RING'};
     return{points:0,label:'MISS'};
 }
-
 function updateHUD(){
     $('score').textContent=score;
     $('arrows').textContent=arrowsLeft===Infinity?'∞':arrowsLeft;
     $('accuracy').innerHTML=(shots?Math.round(hits/shots*100):0)+'<small>%</small>';
     $('timer').textContent=mode==='challenge'?timeLeft+'s':'--';
     $('best').textContent=best;
-
     $('progress').querySelectorAll('span').forEach((el,i)=>{
         el.classList.toggle('done',i<shots);
     });
 }
-
 function addHistory(points,label){
     history.unshift({points,label});
     history=history.slice(0,6);
-
     $('history').innerHTML=history.map((item,i)=>`
         <div class="history-row">
             <span>Shot ${shots-i} · ${item.label}</span>
@@ -855,94 +770,72 @@ function addHistory(points,label){
         </div>
     `).join('');
 }
-
 function shoot(){
     if(!running||flying||!drawing)return;
-
     drawing=false;
-
     if(drawPower<5){
         drawPower=0;
         $('powerFill').style.width='0%';
         $('powerText').textContent='0%';
         return;
     }
-
     shots++;
     if(arrowsLeft!==Infinity)arrowsLeft--;
-
-    // Capture the unstable reticle position at release.
     const shotX=aim.x;
     const shotY=aim.y;
-
-    const dx=shotX-target.x;
-    const dy=shotY-target.y;
-
+    const scatter=6+(1-drawPower/100)*4;
+    const gauss=()=>(Math.random()+Math.random()+Math.random()-1.5)*2;
+    const gust=wind.strength*(.75+Math.random()*.5)*8;
+    const finalX=shotX+gauss()*scatter+wind.x*gust;
+    const finalY=shotY+gauss()*scatter+wind.y*gust;
     arrow={
         startX:bow.x,
         startY:bow.y-90,
-        // Wind pushes the arrow during flight. Stronger gusts create more drift.
-        endX:target.x+dx+wind.x*wind.strength*5.2,
-        endY:target.y+dy+wind.y*wind.strength*5.2,
+        endX:finalX,
+        endY:finalY,
         progress:0,
         duration:Math.max(.3,.85-(drawPower/100)*.2),
-        impactX:target.x+dx,
-        impactY:target.y+dy,
-        result:getPoints(target.x+dx,target.y+dy)
+        impactX:finalX,
+        impactY:finalY,
+        result:getPoints(finalX,finalY)
     };
-
     flying=true;
     releaseRecovery=.65;
-
     playSound(180,.2,'triangle');
-
     $('powerFill').style.width='0%';
     $('powerText').textContent='0%';
     $('message').style.display='none';
-
     updateHUD();
 }
-
 function impact(){
     const result=arrow.result;
     score+=result.points;
-
     if(result.points>0){
         hits++;
         createParticles(arrow.impactX,arrow.impactY);
-
         impactArrows.push({
             x:arrow.impactX,y:arrow.impactY,
             angle:Math.atan2(arrow.impactY-bow.y,arrow.impactX-bow.x)
         });
-
         impactArrows=impactArrows.slice(-15);
         playSound(result.points===10?950:550,.2);
         flash=result.points===10?.16:.05;
     }else{
         playSound(130,.2,'sawtooth');
     }
-
     addHistory(result.points,result.label);
-
     flying=false;
     arrow=null;
     drawPower=0;
-
     updateHUD();
-
     $('message').innerHTML=result.points===10?'PERFECT BULLSEYE!':
         result.points>0?result.label+' +'+result.points:'MISSED!';
-
     $('message').style.display='block';
-
     if(mode==='competition'&&arrowsLeft===0)setTimeout(endGame,900);
 }
-
 function update(dt){
     updateTremor(dt);
     updateWind(dt);
-
     if(flying&&arrow){
         arrow.progress+=dt/arrow.duration;
         if(arrow.progress>=1){
@@ -950,46 +843,38 @@ function update(dt){
             impact();
         }
     }
-
     if(drawing){
+        holdTime+=dt;
         drawPower=Math.min(100,drawPower+dt*55);
         $('powerText').textContent=Math.round(drawPower)+'%';
         $('powerFill').style.width=drawPower+'%';
     }
-
     drawParticles(dt);
 }
-
 function loop(timestamp){
     const dt=Math.min((timestamp-lastTime)/1000||0,.04);
     lastTime=timestamp;
-
     if(running){
         elapsed+=dt;
         update(dt);
     }
-
     render(dt);
-
     if(running||particles.length||flash>0){
         animation=requestAnimationFrame(loop);
     }else{
         animation=null;
     }
 }
-
 function ensureLoop(){
     if(!animation){
         lastTime=performance.now();
         animation=requestAnimationFrame(loop);
     }
 }
-
 function startGame(){
     clearInterval(clock);
     cancelAnimationFrame(animation);
     animation=null;
-
     mode=$('mode').value;
     score=0;shots=0;hits=0;
     history=[];impactArrows=[];particles=[];
@@ -1002,18 +887,14 @@ function startGame(){
     tremor={x:0,y:0,vx:0,vy:0,targetX:0,targetY:0,nextChange:0,noiseX:0,noiseY:0};
     releaseRecovery=0;
     resetWind();
-
     $('history').innerHTML='<div class="empty">Your shooting history will appear here.</div>';
     $('message').style.display='none';
     $('startBtn').textContent='Restart Game ↻';
     $('mode').disabled=true;
-
     $('powerFill').style.width='0%';
     $('powerText').textContent='0%';
-
     updateHUD();
     ensureLoop();
-
     if(mode==='challenge'){
         clock=setInterval(()=>{
             if(!running)return;
@@ -1023,22 +904,17 @@ function startGame(){
         },1000);
     }
 }
-
 function endGame(){
     if(!running)return;
-
     running=false;
     drawing=false;
     flying=false;
     clearInterval(clock);
-
     const accuracy=shots?Math.round(hits/shots*100):0;
-
     if(score>best){
         best=score;
         localStorage.setItem('arenaBest',best);
     }
-
     $('resultTitle').textContent=score>=70?'Outstanding Archer!':'Session Complete!';
     $('resultScore').textContent=score;
     $('resultAccuracy').textContent=accuracy+'%';
@@ -1046,26 +922,21 @@ function endGame(){
     $('overlay').classList.add('show');
     $('startBtn').textContent='Start Game →';
     $('mode').disabled=false;
-
     updateHUD();
 }
-
 function resetGame(){
     clearInterval(clock);
     cancelAnimationFrame(animation);
     animation=null;
-
     running=false;started=false;drawing=false;flying=false;
     score=0;shots=0;hits=0;arrowsLeft=Infinity;timeLeft=60;
     drawPower=0;history=[];particles=[];impactArrows=[];
     arrow=null;flash=0;elapsed=0;releaseRecovery=0;
     windStreaks=Array.from({length:34},()=>({x:Math.random()*W,y:Math.random()*H,length:12+Math.random()*28,offset:Math.random()*Math.PI*2}));
     resetWind();
-
     aim={x:500,y:222};
     rawAim={x:500,y:222};
     tremor={x:0,y:0,vx:0,vy:0,targetX:0,targetY:0,nextChange:0,noiseX:0,noiseY:0};
-
     $('history').innerHTML='<div class="empty">Your shooting history will appear here.</div>';
     $('overlay').classList.remove('show');
     $('mode').disabled=false;
@@ -1074,11 +945,9 @@ function resetGame(){
     $('message').innerHTML='READY, ARCHER?<small>START THE GAME TO ENTER THE RANGE</small>';
     $('powerFill').style.width='0%';
     $('powerText').textContent='0%';
-
     updateHUD();
     render();
 }
-
 function position(e){
     const rect=canvas.getBoundingClientRect();
     return{
@@ -1086,18 +955,15 @@ function position(e){
         y:(e.clientY-rect.top)*H/rect.height
     };
 }
-
 function updateAim(p){
     rawAim.x=Math.max(220,Math.min(780,p.x));
     rawAim.y=Math.max(70,Math.min(410,p.y));
 }
-
 canvas.addEventListener('pointermove',e=>{
     if(!running||flying)return;
     updateAim(position(e));
     ensureLoop();
 });
-
 canvas.addEventListener('pointerdown',e=>{
     if(!running||flying)return;
     e.preventDefault();
@@ -1105,36 +971,31 @@ canvas.addEventListener('pointerdown',e=>{
     updateAim(position(e));
     drawing=true;
     drawPower=0;
+    holdTime=0;
     $('message').style.display='none';
     ensureLoop();
 });
-
 canvas.addEventListener('pointerup',()=>{
     if(drawing)shoot();
 });
-
 canvas.addEventListener('pointercancel',()=>{
     drawing=false;
     drawPower=0;
     $('powerFill').style.width='0%';
     $('powerText').textContent='0%';
 });
-
 $('startBtn').addEventListener('click',startGame);
 $('resetBtn').addEventListener('click',resetGame);
 $('mode').addEventListener('change',resetGame);
-
 $('again').addEventListener('click',()=>{
     $('overlay').classList.remove('show');
     startGame();
 });
-
 $('soundBtn').addEventListener('click',()=>{
     soundOn=!soundOn;
     $('soundBtn').textContent=soundOn?'♫':'♪';
     $('soundBtn').style.color=soundOn?'var(--green)':'var(--muted)';
 });
-
 updateHUD();
 resetWind();
 render();
