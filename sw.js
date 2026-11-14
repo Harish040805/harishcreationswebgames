@@ -12,6 +12,7 @@ self.addEventListener('install', event => {
         './boardshooter/boardshooter.html',
         './bulbsimulation/bulbsimulation.html',
         './bunnyhome/bunnyhome.html',
+        './echoesofthevault/echoesofthevault.html',
         './excitonium/excitonium.html',
         './fortcapture/fortcapture.html',
         './hackedwindow/hackedwindow.html',
