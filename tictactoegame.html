@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tic-Tac-Toe</title>
+<script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="stylesheet" type="text/css" href="tictactoe.css">
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+class Square extends React.Component {
+render() {
+return (
+<div className="square" onClick={this.props.onClick}>
+{this.props.value}
+</div>
+);
+}
+}
+class Board extends React.Component {
+renderSquare(i) {
+return (
+<div className="square-wrapper">
+<Square
+value={this.props.board[i]}
+onClick={() => this.props.handleClick(i)}
+/>
+</div>
+);
+}
+render() {
+return (
+<div className="board">
+{this.props.board.map((square, i) => (
+<div key={i}>{this.renderSquare(i)}</div>
+))}
+</div>
+);
+}
+}
+class Game extends React.Component {
+constructor(props) {
+super(props);
+this.state = {
+board: Array(9).fill(null),
+xIsNext: true,
+winner: null,
+};
+}
+handleClick(i) {
+if (this.state.winner || this.state.board[i]) return;
+const newBoard = [...this.state.board];
+newBoard[i] = this.state.xIsNext ? 'X' : 'O';
+this.setState({
+board: newBoard,
+xIsNext: !this.state.xIsNext,
+});
+this.checkWinner(newBoard);
+}
+checkWinner(board) {
+const winningCombinations = [
+[0, 1, 2],
+[3, 4, 5],
+[6, 7, 8],
+[0, 3, 6],
+[1, 4, 7],
+[2, 5, 8],
+[0, 4, 8],
+[2, 4, 6],
+];
+for (const combination of winningCombinations) {
+if (
+board[combination[0]] &&
+board[combination[0]] === board[combination[1]] &&
+board[combination[0]] === board[combination[2]]
+) {
+this.setState({ winner: board[combination[0]] });
+return;
+}
+}
+if (!board.includes(null)) {
+this.setState({ winner: 'Draw' });
+}
+}
+resetGame() {
+this.setState({
+board: Array(9).fill(null),
+xIsNext: true,
+winner: null,
+});
+}
+render() {
+return (
+<div style={{ marginTop: '60px' }}>
+<center><h1>Tic-Tac-Toe</h1></center>
+<Board
+board={this.state.board}
+handleClick={(i) => this.handleClick(i)}
+/>
+{this.state.winner && (
+<div className="game-info">
+{this.state.winner === 'Draw' ? (
+<h2>Draw</h2>
+) : (
+<h2>Winner: {this.state.winner}</h2>
+)}
+<button onClick={() => this.resetGame()}>Play Again</button>
+</div>
+)}
+</div>
+);
+}
+}
+ReactDOM.render(<Game />, document.getElementById('root'));
+</script>
+</body>
+</html>
