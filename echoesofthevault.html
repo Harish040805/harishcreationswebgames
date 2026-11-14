@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Echoes of the Vault</title>
+<style>
+:root{--bg:#050608;--fg:#d8dee9;--acc:#38bdf8;--edge:#232933;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#050608;--fg:#d8dee9}}
+*{box-sizing:border-box;margin:0;padding:0;user-select:none}
+body{background:radial-gradient(circle at 50% 45%,#161b24,#020304);background-color:var(--bg);color:var(--fg);font-family:'Courier New',monospace;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px}
+#wrap{position:relative;width:100%;max-width:1300px}
+canvas{width:100%;height:auto;aspect-ratio:1300/625;border:3px solid var(--edge);border-radius:6px;background:#0d1015;box-shadow:0 20px 50px #000;display:block}
+#sw{position:absolute;top:12px;left:50%;transform:translateX(-50%);font-size:18px;font-weight:bold;color:var(--acc);background:rgba(13,16,21,.85);padding:5px 14px;border:1px solid #2b3340;border-radius:4px;letter-spacing:2px;text-shadow:0 0 8px rgba(56,189,248,.6)}
+#sw.rev{color:#ef4444;border-color:#991b1b;text-shadow:0 0 10px rgba(239,68,68,.8)}
+#ear{margin-top:14px;width:100%;max-width:1300px;min-height:50px;padding:12px 18px;background:#0b0e13;border:1px solid #2b3340;border-left:4px solid var(--acc);border-radius:4px;color:#bae6fd;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+body.flash canvas{border-color:#991b1b;box-shadow:0 0 60px rgba(220,38,38,.65)}
+#ov{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px;text-align:center;background:rgba(2,3,4,.85);border-radius:6px}
+#ov h1{font-size:clamp(20px,4vw,34px);letter-spacing:.2em;color:var(--acc);text-shadow:0 0 12px rgba(56,189,248,.6)}
+#ov p{font-size:13px;letter-spacing:.08em;color:#94a3b8;max-width:420px;line-height:1.6}
+#go{font:bold 16px 'Courier New',monospace;letter-spacing:.2em;color:#020617;background:var(--acc);border:0;border-radius:4px;padding:12px 32px;cursor:pointer;box-shadow:0 0 18px rgba(56,189,248,.5)}
+#go:hover{background:#7dd3fc}
+#ov.hide{display:none}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="sw">00:00:00</div><canvas id="c" width="1300" height="625"></canvas>
+  <div id="ov">
+    <h1>ECHOES OF THE VAULT</h1>
+    <p>Reach the vault. Hold E/Space to turn the wheel upside down and back. Then get to the safe zone. Use WASD/ &#x2190;&#x2191;&#x2192;&#x2193;. Stay out of the light.</p>
+    <button id="go">START</button>
+  </div>
+</div>
+<div id="ear"></div>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d'),ear=document.getElementById('ear'),sw=document.getElementById('sw');
+const LIMIT=15000;
+const ZONE={x1:30,x2:175};            
+const clues=["Get to the vault. Stay out of the light.","Something is hunting you now.","Your shadow remembers what you forgot.","The room is folding. Do not trust your steps.","Why do you keep coming back here?"];
+const hv={x:0,y:0};
+const lastSeen={x:85,y:312,valid:false};
+let health=100; // never regenerates, not even between loops
+let audio=null,clock=0,counting=false,state='play',loop=0,tick=0,rec=[],echoes=[],last=performance.now();
+let mode='patrol',trail=[],trailIdx=0,grace=0,breachAt=-1;
+let clears=0;
+const lastH={x:1,y:0};
+let swap=false;
+const keys={};
+addEventListener('keydown',e=>{if(e.key.toLowerCase()==='r'&&(state==='dead'||state==='won'))location.reload();keys[e.key.toLowerCase()]=true;if(!audio)audio=new(window.AudioContext||window.webkitAudioContext)();if(e.key.startsWith('Arrow')||e.key===' ')e.preventDefault()});
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+const P={x:85,y:312,a:0,w:0,m:false,speed:4.5}; 
+const V={x:1195,y:255,w:65,h:112,open:false,wheel:0};
+let started=false;
+document.getElementById('go').addEventListener('click',e=>{
+  e.target.blur();
+  if(!audio)audio=new(window.AudioContext||window.webkitAudioContext)();
+  document.getElementById('ov').classList.add('hide');
+  last=performance.now();
+  started=true;
+  say(clues[0]);
+});
+const guards=[
+  {x:585,y:150,dir:1,a:Math.PI/2,w:0,range:200,spread:.55},
+  {x:715,y:475,dir:-1,a:-Math.PI/2,w:0,range:200,spread:.55}
+];
+function say(t,p=1,r=1){ear.textContent='EARPIECE: "'+t+'"';if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.pitch=p;u.rate=r;speechSynthesis.speak(u)}}
+function setGuards(n){
+  guards.length=0;
+  const cy=V.y+V.h/2;
+  for(let i=0;i<n;i++){
+    guards.push({
+      x:V.x-35-(i%2)*30,
+      y:Math.max(40,Math.min(585,cy+(i-(n-1)/2)*60)),
+      dir:1,a:Math.PI,w:0,range:200,spread:.55,vx:0,vy:0,fool:0,wise:false,wp:null
+    });
+  }
+}
+function tone(){if(!audio)return;const o=audio.createOscillator(),g=audio.createGain();o.type='sawtooth';o.frequency.setValueAtTime(440,audio.currentTime);o.frequency.exponentialRampToValueAtTime(110,audio.currentTime+.5);g.gain.setValueAtTime(.1,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.5);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+.5)}
+function fmt(ms){ms=Math.max(0,ms);const c=Math.floor(ms/10)%100,s=Math.floor(ms/1000)%60,m=Math.floor(ms/60000);const p=n=>String(n).padStart(2,'0');return p(m)+':'+p(s)+':'+p(c)}
+function inCone(px,py,g){const dx=px-g.x,dy=py-g.y;if(Math.hypot(dx,dy)>g.range)return false;let d=Math.atan2(dy,dx)-g.a;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;return Math.abs(d)<=g.spread}
+function fail(kind){
+  if(state!=='play')return;
+  state=kind;
+  if(kind==='caught')say("Wait! Haven’t you stood there before?",.7,.9);
+  else say("Caught in Time Loop!",.6,.85);
+  setTimeout(()=>restart(kind),3500);
+}
+function restart(kind){
+  tone();loop++;document.body.classList.add('flash');setTimeout(()=>document.body.classList.remove('flash'),450);
+  if(rec.length)echoes.push(rec);
+  trail=rec;trailIdx=Math.max(0,breachAt);rec=[];tick=0;breachAt=-1;
+  mode=kind==='quiet'?'trail':'hunt';
+  if(kind!=='quiet')P.speed=4.5;
+  Object.assign(P,{x:85,y:312,a:0,m:false});
+  setGuards(clears+3);
+  grace=60;
+  V.open=false;V.wheel=0;clock=0;counting=false;sw.classList.remove('rev');
+  lastSeen.x=85;lastSeen.y=312;lastSeen.valid=false;
+  state='play';
+  if(kind==='quiet')say("Too quiet... Something follows your steps.",.7,.9);
+  else say(clues[Math.min(loop,clues.length-1)],Math.max(.5,1-loop*.1),.95);
+}
+function update(){
+  if(!started){last=performance.now();return}
+  const now=performance.now(),dt=Math.min(50,now-last);last=now;
+  if(state!=='play'){sw.textContent=fmt(clock);return}
+  tick++;
+  let dx=(keys['d']||keys['arrowright']?1:0)-(keys['a']||keys['arrowleft']?1:0);
+  let dy=(keys['s']||keys['arrowdown']?1:0)-(keys['w']||keys['arrowup']?1:0);
+  P.m=dx||dy;
+  if(P.m){const l=Math.hypot(dx,dy);P.x+=dx/l*P.speed;P.y+=dy/l*P.speed;P.a=Math.atan2(dy,dx);P.w+=.25}
+  P.x=Math.max(30,Math.min(1270,P.x));P.y=Math.max(30,Math.min(595,P.y));
+  rec.push({x:P.x,y:P.y,a:P.a,w:P.w,m:!!P.m});
+if(P.m){hv.x+=(Math.cos(P.a)-hv.x)*.12;hv.y+=(Math.sin(P.a)-hv.y)*.12}
+else{hv.x*=.9;hv.y*=.9}
+const hl=Math.hypot(hv.x,hv.y);
+if(hl>.3){lastH.x=hv.x/hl;lastH.y=hv.y/hl}
+const hx=lastH.x, hy=lastH.y, nx=-hy, ny=hx;
+const seeing=guards.map(g=>inCone(P.x,P.y,g));
+const spotted=seeing.some(Boolean);
+guards.forEach((g,i)=>{g.lost=seeing[i]?40:Math.max(0,(g.lost||0)-1)}); // per-guard memory timer
+const chasing=guards.map((g,i)=>seeing[i]||g.lost>0);                  // light on me, or just lost me
+if(spotted){lastSeen.x=P.x;lastSeen.y=P.y;lastSeen.valid=true;health=Math.max(0,health-dt*.005)} // 5% per second in any red light
+if(health<=0){state='dead';counting=false;say("Your strength is gone. The vault keeps you.",.6,.85);return}
+const fr=Math.max(0,rec.length-1);
+const shadowOf=idx=>{
+  if(!echoes.length)return {x:lastSeen.x,y:lastSeen.y};
+  const e=echoes[idx%echoes.length];
+  const q=e[Math.min(fr,e.length-1)];
+  return {x:q.x,y:q.y};
+};
+const hunters=guards.filter((g,i)=>chasing[i]);
+hunters.sort((a,b)=>((a.x-P.x)*nx+(a.y-P.y)*ny)-((b.x-P.x)*nx+(b.y-P.y)*ny));
+hunters.forEach((g,k)=>{g.s=hunters.length>1?-1+2*k/(hunters.length-1):0});
+const slot=g=>{
+  const s=g.s, d=Math.hypot(P.x-g.x,P.y-g.y);
+  const lead=Math.min(d*.4,140)*(1.3-.6*Math.abs(s));
+  const r=Math.min(d*.55,150)*s;
+  return {
+    x:Math.max(30,Math.min(1270,P.x+hx*lead+nx*r)),
+    y:Math.max(30,Math.min(595,P.y+hy*lead+ny*r))
+  };
+};
+
+guards.forEach((g,idx)=>{
+  g.w+=.2;
+  if(mode==='patrol'){
+    g.y+=2.0*g.dir;
+    g.a=g.dir>0?Math.PI/2:-Math.PI/2;
+    if(g.y>540||g.y<85)g.dir*=-1;
+  }else if(grace>0){
+    g.vx=0;g.vy=0;
+  }else{
+    const sp=Math.min(2.5,1.8+loop*.08);
+    const dxp=P.x-g.x, dyp=P.y-g.y, dist=Math.hypot(dxp,dyp)||1;
+    const sees=chasing[idx];
+    let tx,ty,spd=sp;
+    // a real sighting resets everything; after 5s of following its shadow the guard realises it is fake
+    if(seeing[idx]){g.fool=0;g.wise=false;g.wp=null}
+    else if(!sees&&!g.wise){
+      g.fool=(g.fool||0)+dt;
+      if(g.fool>=5000){g.wise=true;g.wp=null;g.pausing=false;g.home={x:g.x,y:g.y}}
+    }
+    if(!sees&&g.wise){
+      // search: go to where the player was last seen, stop and look around, then wander nearby
+      const hub=lastSeen.valid?lastSeen:g.home;
+      if(!g.wp){g.wp={x:hub.x,y:hub.y};g.pausing=false}
+      if(!g.pausing&&Math.hypot(g.wp.x-g.x,g.wp.y-g.y)<25){g.pausing=true;g.pause=700+Math.random()*900;g.scan=g.a}
+      if(g.pausing){
+        g.pause-=dt;
+        if(g.pause<=0){
+          g.pausing=false;
+          const ang=Math.random()*6.283,r=60+Math.random()*180;
+          g.wp={x:Math.max(30,Math.min(1270,hub.x+Math.cos(ang)*r)),y:Math.max(30,Math.min(595,hub.y+Math.sin(ang)*r))};
+        }
+      }
+      tx=g.wp.x;ty=g.wp.y;spd=g.pausing?0:sp*.75;
+    }else if(!sees){
+      const s=shadowOf(idx);tx=s.x;ty=s.y;
+    }else if(dist<100){
+      tx=P.x+hx*10;ty=P.y+hy*10;    
+    }else{
+      const s=slot(g);tx=s.x;ty=s.y;
+    }
+    let mx=tx-g.x, my=ty-g.y;
+    const md=Math.hypot(mx,my)||1; mx/=md; my/=md;
+    for(const o of guards){
+      if(o===g)continue;
+      const ex=g.x-o.x, ey=g.y-o.y, ed=Math.hypot(ex,ey)||1;
+      if(ed<100){const w=(1-ed/100)*1.5;mx+=ex/ed*w;my+=ey/ed*w}
+    }
+    const ml=Math.hypot(mx,my)||1;
+    g.vx=(g.vx||0)+(mx/ml*spd-(g.vx||0))*.15;
+    g.vy=(g.vy||0)+(my/ml*spd-(g.vy||0))*.15;
+    g.x+=g.vx; g.y+=g.vy;
+    const moving=Math.hypot(g.vx,g.vy)>.2;
+    const look=sees?Math.atan2(dyp,dxp):(g.wise&&g.pausing?g.scan+Math.sin(g.pause/200)*1.1:(moving?Math.atan2(g.vy,g.vx):g.a));
+    let diff=look-g.a;
+    while(diff>Math.PI)diff-=2*Math.PI;
+    while(diff<-Math.PI)diff+=2*Math.PI;
+    g.a+=diff*.15;
+  }
+  const caught=(mode==='patrol')?inCone(P.x,P.y,g)
+    :(grace<=0&&spotted&&Math.hypot(P.x-g.x,P.y-g.y)<25);
+  if(caught){fail('caught');return}
+});
+
+if(mode!=='patrol'&&grace<=0){
+  const MIN=46;
+  for(let i=0;i<guards.length;i++)for(let j=i+1;j<guards.length;j++){
+    const a=guards[i], b=guards[j];
+    let sx=b.x-a.x, sy=b.y-a.y, sd=Math.hypot(sx,sy);
+    if(sd<MIN){
+      if(sd<.01){sx=0;sy=1;sd=1}
+      const push=(MIN-sd)/2, ux=sx/sd, uy=sy/sd;
+      a.x-=ux*push;a.y-=uy*push;
+      b.x+=ux*push;b.y+=uy*push;
+    }
+  }
+}
+if(mode!=='patrol'&&grace>0)grace--;
+const atVault=P.x+15>V.x-30&&P.x-15<V.x+V.w+30&&P.y+15>V.y-30&&P.y-15<V.y+V.h+30;
+V.near=atVault&&!V.open;
+if(!V.open){
+  if(V.near&&(keys['e']||keys[' '])){
+    const before=V.wheel;
+    V.wheel=Math.min(Math.PI*2,V.wheel+.04);
+    if(before<Math.PI&&V.wheel>=Math.PI)say("Upside down. Keep turning.",.9,1);
+    if(V.wheel>=Math.PI*2){
+      V.open=true;counting=true;clock=LIMIT;sw.classList.add('rev');breachAt=rec.length-1;
+      say("Vault breached. Or did it breach you?",.8,.9);
+    }
+  }else if(V.wheel>0){
+    V.wheel=Math.max(0,V.wheel-.2);
+  }
+}
+  if(counting){
+    clock-=dt;
+    if(clock<=0){clock=0;sw.textContent=fmt(0);fail('timeout');return}
+    if(P.x>=ZONE.x1&&P.x<=ZONE.x2){
+      if(mode==='patrol'){
+        state='quiet';counting=false;
+        say("Too quiet... Nothing is ever this easy.",.7,.9);
+        setTimeout(()=>restart('quiet'),3500);
+        return;
+      }
+      counting=false;
+      clears++;
+      if(clears>=3){
+        state='won';say("Clean exit. The vault remembers nothing.",1,.9);
+      }else{
+        state='cleared';
+        say("You made it out. But the vault remembers... Again.",.7,.9);
+        setTimeout(()=>restart('cleared'),3500);
+      }
+    }
+  }else clock+=dt;
+  sw.textContent=fmt(clock);
+}
+function human(x,y,a,w,m,t){
+  ctx.save();ctx.translate(x,y);
+  ctx.beginPath();ctx.ellipse(2,5,15,11,0,0,7);ctx.fillStyle='rgba(0,0,0,.55)';ctx.fill();
+  ctx.rotate(a);const s=m?Math.sin(w)*8:0;
+  if(t==='echo'){ctx.globalAlpha=.55;ctx.shadowColor='#a855f7';ctx.shadowBlur=12}
+  ctx.fillStyle=t==='echo'?'#581c87':'#0f172a';ctx.beginPath();ctx.roundRect(s-5,-8,11,6,2);ctx.roundRect(-s-5,2,11,6,2);ctx.fill();
+  ctx.fillStyle=t==='p'?'#1e293b':t==='g'?'#7f1d1d':'#7e22ce';ctx.beginPath();ctx.ellipse(0,0,10,15,0,0,7);ctx.fill();
+  ctx.fillStyle=t==='p'?'#e2e8f0':t==='g'?'#fca5a5':'#e9d5ff';ctx.beginPath();ctx.arc(2,0,8,0,7);ctx.fill();
+  ctx.fillStyle=t==='echo'?'#3b0764':'#020617';ctx.beginPath();ctx.arc(4,0,7,-1.4,1.4);ctx.fill();
+  ctx.restore();
+}
+function banner(bg,col,txt){ctx.fillStyle=bg;ctx.fillRect(0,0,1300,625);ctx.fillStyle=col;ctx.font='bold 32px "Courier New",monospace';ctx.textAlign='center';ctx.fillText(txt,650,318);ctx.textAlign='left'}
+function draw(){
+  ctx.fillStyle='#0c0f14';ctx.fillRect(0,0,1300,625);
+  ctx.strokeStyle='rgba(255,255,255,.03)';
+  for(let x=0;x<1300;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,625);ctx.stroke()}
+  for(let y=0;y<625;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(1300,y);ctx.stroke()}
+  ctx.fillStyle=V.open?'rgba(52,211,153,.05)':'rgba(255,255,255,.025)';ctx.fillRect(ZONE.x1-30,0,ZONE.x2-ZONE.x1+30,625);
+  ctx.fillStyle='#1e293b';ctx.fillRect(V.x,V.y,V.w,V.h);
+  ctx.strokeStyle=V.open?'#10b981':'#f59e0b';ctx.lineWidth=3;ctx.strokeRect(V.x+2,V.y+2,V.w-4,V.h-4);
+  ctx.save();ctx.translate(V.x+V.w/2,V.y+V.h/2);ctx.rotate(V.wheel);
+  ctx.strokeStyle=V.open?'#10b981':'#94a3b8';ctx.lineWidth=5;ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(0,0);ctx.lineTo(0,22);  
+  ctx.moveTo(0,0);ctx.lineTo(-17,-19);
+  ctx.moveTo(0,0);ctx.lineTo(17,-19); 
+  ctx.stroke();
+  ctx.fillStyle='#f59e0b';ctx.beginPath();ctx.arc(0,0,5,0,7);ctx.fill();
+  ctx.restore();ctx.lineCap='butt';
+
+if(V.near){
+  ctx.fillStyle='rgba(226,232,240,.9)';ctx.font='bold 12px "Courier New",monospace';ctx.textAlign='center';
+  ctx.fillText('HOLD E / SPACE',V.x+V.w/2,V.y-12);ctx.textAlign='left';
+}
+if(!V.open&&V.wheel>0){
+  const bx=V.x,by=V.y+V.h+10,bw=V.w;
+  ctx.fillStyle='rgba(255,255,255,.12)';ctx.fillRect(bx,by,bw,5);
+  ctx.fillStyle=V.wheel>=Math.PI?'#fbbf24':'#38bdf8';ctx.fillRect(bx,by,bw*V.wheel/(Math.PI*2),5);
+  ctx.fillStyle='#e2e8f0';ctx.fillRect(bx+bw/2-1,by-2,2,9); // halfway tick (upside down)
+}
+  ctx.restore();
+  guards.forEach(g=>{
+    ctx.save();ctx.translate(g.x,g.y);ctx.rotate(g.a);
+    const bg=ctx.createRadialGradient(10,0,5,10,0,g.range);bg.addColorStop(0,'rgba(254,240,138,.42)');bg.addColorStop(.6,'rgba(239,68,68,.14)');bg.addColorStop(1,'rgba(239,68,68,0)');
+    ctx.beginPath();ctx.moveTo(8,0);ctx.arc(8,0,g.range,-g.spread,g.spread);ctx.closePath();ctx.fillStyle=bg;ctx.fill();ctx.restore();
+  });
+  const f=rec.length-1;
+  for(const e of echoes)if(f>=0&&f<e.length){const q=e[f];human(q.x,q.y,q.a,q.w,q.m,'echo')}
+  guards.forEach(g=>human(g.x,g.y,g.a,g.w,true,'g'));
+  human(P.x,P.y,P.a,P.w,P.m,'p');
+  ctx.fillStyle='rgba(226,232,240,.85)';ctx.font='bold 14px "Courier New",monospace';
+  const stage=mode==='patrol'?0:clears+1;
+  ctx.fillText('LOOP: 0'+stage+'  |  ECHOES: '+echoes.length+'  |  WASD / ARROWS',22,30);
+  const hbw=200,hbx=1300-22-hbw,hby=22;
+  ctx.fillStyle='rgba(226,232,240,.85)';ctx.font='bold 12px "Courier New",monospace';ctx.textAlign='right';
+  ctx.fillText('HEALTH '+Math.ceil(health)+'%',hbx+hbw,hby-5);ctx.textAlign='left';
+  ctx.fillStyle='rgba(255,255,255,.12)';ctx.fillRect(hbx,hby,hbw,10);
+  ctx.fillStyle=health>50?'#34d399':health>25?'#fbbf24':'#ef4444';ctx.fillRect(hbx,hby,hbw*health/100,10);
+  ctx.strokeStyle='#2b3340';ctx.lineWidth=1;ctx.strokeRect(hbx+.5,hby+.5,hbw-1,9);
+  if(state==='caught')banner('rgba(127,29,29,.7)','rgba(254,202,202,0.95)','Wait! Haven’t you stood there before?');
+  if(state==='timeout')banner('rgba(0,0,0,.85)','#ef4444','Caught in Time Loop!');
+  if(state==='quiet')banner('rgba(0,0,0,.85)','#fbbf24','Too quiet... Again.');
+  if(state==='won')banner('rgba(0,0,0,.8)','#34d399','VAULT ROBBED. YOU ESCAPED.');
+  if(state==='cleared')banner('rgba(0,0,0,.85)','#38bdf8','Escaped... but it\'s not over.');
+  if(state==='dead')banner('rgba(0,0,0,.9)','#ef4444','GAME OVER. HEALTH DEPLETED.');
+  if(state==='dead'||state==='won'){ctx.fillStyle='rgba(226,232,240,.8)';ctx.font='14px "Courier New",monospace';ctx.textAlign='center';ctx.fillText('Press R to play again',650,356);ctx.textAlign='left'}
+}
+(function run(){update();draw();requestAnimationFrame(run)})();
+</script>
+</body>
+</html>
